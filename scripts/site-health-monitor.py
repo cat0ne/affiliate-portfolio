@@ -14,7 +14,21 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 REPORTS_DIR = BASE_DIR / "reports"
 SITES = ["aspirateur", "bureau", "cafe", "matelas", "pixinstant"]
-LOCALES = ["content-en", "content-de", "content-es", "content-it", "content-uk"]
+
+# Per-site supported locales and their directory keys
+SITE_LOCALES = {
+    "aspirateur": ["en", "de", "es", "it"],        # uk in types but no content dir
+    "bureau":     ["en", "de", "es", "it", "uk"],
+    "cafe":       ["en", "de", "es", "it"],        # no uk support
+    "matelas":    ["en", "de", "es", "it"],        # en-gb handled separately
+    "pixinstant": ["en", "de", "es", "it"],        # uk in types but no content dir
+}
+
+# Special locale directory mappings (if dir name != locale key)
+LOCALE_DIR_MAP = {
+    "en-gb": "en-gb",
+}
+
 SCHEMA_TYPES = [
     "ArticleJsonLd",
     "ProductJsonLd",
@@ -95,8 +109,8 @@ def get_recent_commits(site_dir: Path, days: int = 7):
     return [line.strip() for line in stdout.splitlines() if line.strip()]
 
 
-def count_content_files(site_dir: Path):
-    """Count content files per locale.
+def count_content_files(site_dir: Path, site: str):
+    """Count .mdx content files per locale.
 
     Supports two directory patterns:
       - Sibling dirs: content-en/, content-de/, content-es/ ...
@@ -105,30 +119,29 @@ def count_content_files(site_dir: Path):
     """
     counts = {}
     content_dir = site_dir / "content"
-    locale_names = [loc.replace("content-", "") for loc in LOCALES]
+    site_locales = SITE_LOCALES.get(site, [])
 
-    # FR = .mdx files in content/ but NOT inside content/en/, content/de/, etc.
+    # FR = .mdx files in content/ but NOT inside nested locale subdirs
     fr_count = 0
     if content_dir.exists():
         for f in content_dir.rglob("*.mdx"):
-            # skip files inside nested locale dirs (e.g. content/en/...)
             rel_parts = f.relative_to(content_dir).parts
-            if len(rel_parts) > 1 and rel_parts[0] in locale_names:
+            if len(rel_parts) > 1 and rel_parts[0] in site_locales:
                 continue
             fr_count += 1
     counts["fr"] = fr_count
 
-    for locale in LOCALES:
-        loc_key = locale.replace("content-", "")
+    for loc_key in site_locales:
         total = 0
+        dir_name = LOCALE_DIR_MAP.get(loc_key, loc_key)
 
         # Pattern 1: sibling dir (e.g. aspirateur/content-en/)
-        sibling_dir = site_dir / locale
+        sibling_dir = site_dir / f"content-{dir_name}"
         if sibling_dir.exists():
             total += sum(1 for f in sibling_dir.rglob("*.mdx"))
 
         # Pattern 2: nested dir (e.g. pixinstant/content/en/)
-        nested_dir = site_dir / "content" / loc_key
+        nested_dir = site_dir / "content" / dir_name
         if nested_dir.exists():
             total += sum(1 for f in nested_dir.rglob("*.mdx"))
 
@@ -184,14 +197,14 @@ def analyze_site(site: str):
 
     git = get_git_status(site_dir)
     commits = get_recent_commits(site_dir)
-    content = count_content_files(site_dir)
+    content = count_content_files(site_dir, site)
     schemas = get_schema_coverage(site_dir)
     config = check_config_files(site_dir)
 
     # Translation gaps: compare FR to each locale
     fr_count = content.get("fr", 0)
     gaps = {}
-    for loc in ["en", "de", "es", "it", "uk"]:
+    for loc in SITE_LOCALES.get(site, []):
         loc_count = content.get(loc, 0)
         gaps[loc] = {
             "count": loc_count,
@@ -231,14 +244,23 @@ def print_summary(results):
     print()
 
     # Content counts
+    all_locales = set()
+    for r in results:
+        all_locales.update(r["content"].keys())
+    all_locales.discard("fr")
+    locale_cols = sorted(all_locales)
+    header = f"  {'Site':<12} {'FR':>6}"
+    for lc in locale_cols:
+        header += f" {lc.upper():>6}"
     print("  CONTENT FILES (FR + Locales)")
-    print(f"  {'Site':<12} {'FR':>6} {'EN':>6} {'DE':>6} {'ES':>6} {'IT':>6} {'UK':>6}")
-    print(f"  {'-' * 56}")
+    print(header)
+    print(f"  {'-' * (18 + 7 * len(locale_cols))}")
     for r in results:
         c = r["content"]
-        print(
-            f"  {r['site']:<12} {c.get('fr',0):>6} {c.get('en',0):>6} {c.get('de',0):>6} {c.get('es',0):>6} {c.get('it',0):>6} {c.get('uk',0):>6}"
-        )
+        row = f"  {r['site']:<12} {c.get('fr',0):>6}"
+        for lc in locale_cols:
+            row += f" {c.get(lc,0):>6}"
+        print(row)
     print()
 
     # Recent activity

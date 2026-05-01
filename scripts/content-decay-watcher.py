@@ -24,6 +24,28 @@ THIN_THRESHOLD = 500
 CURRENT_YEAR = 2026
 OUTDATED_YEAR = CURRENT_YEAR - 1  # 2025
 
+# Patterns that are legitimate historical context — exclude from flagging
+HISTORICAL_YEAR_PATTERNS = [
+    re.compile(r"Prime Day\s+" + str(OUTDATED_YEAR), re.IGNORECASE),
+    re.compile(r"Black Friday\s+" + str(OUTDATED_YEAR), re.IGNORECASE),
+    re.compile(r"Cyber Monday\s+" + str(OUTDATED_YEAR), re.IGNORECASE),
+    re.compile(r"(?:In|En|Durante|Nel)\s+" + str(OUTDATED_YEAR) + r"[,:]", re.IGNORECASE),
+    re.compile(r"(?:historical data|données historiques|datos históricos|dati storici)\s+(?:from|de|da)?\s+.*?" + str(OUTDATED_YEAR), re.IGNORECASE),
+    re.compile(r"(?:based on|basé sur|basado en|basato su)\s+.*?" + str(OUTDATED_YEAR), re.IGNORECASE),
+    re.compile(r"(?:took place|a eu lieu|tuvo lugar|ha avuto luogo)\s+.*?" + str(OUTDATED_YEAR), re.IGNORECASE),
+    re.compile(r"(?:from|de|des)\s+" + str(OUTDATED_YEAR) + r"\s+(?:and|et|y|e)\s+" + str(CURRENT_YEAR), re.IGNORECASE),
+]
+
+
+def count_outdated_year_excluding_context(text: str, year: int) -> int:
+    """Count occurrences of `year` in text, excluding legitimate historical references."""
+    year_str = str(year)
+    total = text.count(year_str)
+    excluded = 0
+    for pattern in HISTORICAL_YEAR_PATTERNS:
+        excluded += len(pattern.findall(text))
+    return max(0, total - excluded)
+
 
 # ─── Word counting for MDX ───
 
@@ -183,12 +205,10 @@ def scan_site(site_dir: Path):
 
             # ── Outdated year check ──
             outdated_count = raw_text.count(str(OUTDATED_YEAR))
-            # Only flag if the title mentions CURRENT_YEAR but body mentions OUTDATED_YEAR,
-            # or if it's a seasonal article (Prime Day, Black Friday, etc.) that references last year
             if outdated_count > 0:
                 # Skip if it's just a frontmatter date field
                 body_text = raw_text.split("---", 2)[2] if raw_text.startswith("---") else raw_text
-                body_outdated = body_text.count(str(OUTDATED_YEAR))
+                body_outdated = count_outdated_year_excluding_context(body_text, OUTDATED_YEAR)
                 if body_outdated > 0:
                     outdated_results.append({
                         "site": site_dir.name,
