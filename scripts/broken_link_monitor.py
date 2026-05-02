@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """
-Broken Affiliate Link Monitor
-Scans all MDX files and product JSONs for Amazon affiliate URLs,
+Broken Affiliate Link Monitor v2
+Scans all MDX files and product JSONs for Amazon /dp/ URLs only,
 checks them via HTTP GET with rate limiting, and reports genuinely broken links.
 
-Amazon aggressively blocks bots. We use slow sequential requests with
-real browser headers and retry 404s once to reduce false positives.
+Changes from v1:
+- Only checks /dp/ product URLs (skips /s?k= search links — always valid)
+- 404 on /dp/ = genuinely broken (not "uncertain")
+- Partial save every 50 URLs (survives interrupts)
+- amazon.com fallback: if ASIN 404s on .com, checks .fr before flagging
+- Seasonal pages flagged separately (high expected rot)
 """
 
 import json
@@ -31,40 +35,34 @@ AMAZON_DOMAINS = {
     "www.amazon.es", "www.amazon.it", "www.amazon.co.uk", "www.amazon.com",
 }
 
-URL_RE = re.compile(r'https?://[^\s"\'>\)\]]+')
-
-# Minimal, safe headers — Amazon blocks requests with mismatched Accept-Language
-USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
-
-# Domain-appropriate Accept-Language to avoid 404 redirects
-LOCALE_HEADERS = {
-    "amazon.fr": "fr-FR,fr;q=0.9",
-    "www.amazon.fr": "fr-FR,fr;q=0.9",
-    "amazon.de": "de-DE,de;q=0.9",
-    "www.amazon.de": "de-DE,de;q=0.9",
-    "amazon.es": "es-ES,es;q=0.9",
-    "www.amazon.es": "es-ES,es;q=0.9",
-    "amazon.it": "it-IT,it;q=0.9",
-    "www.amazon.it": "it-IT,it;q=0.9",
-    "amazon.co.uk": "en-GB,en;q=0.9",
-    "www.amazon.co.uk": "en-GB,en;q=0.9",
-    "amazon.com": "en-US,en;q=0.9",
-    "www.amazon.com": "en-US,en;q=0.9",
+# Primary locale domain for each site (used for amazon.com fallback)
+SITE_PRIMARY_DOMAIN = {
+    "matelas": "amazon.fr",
+    "aspirateur": "amazon.fr",
+    "bureau": "amazon.fr",
+    "cafe": "amazon.fr",
+    "pixinstant": "amazon.fr",
 }
 
+# Locale detection from file path
+LOCALE_DOMAIN_MAP = {
+    "content": "amazon.fr",
+    "content-en": "amazon.co.uk",  # EN content usually targets UK
+    "content-de": "amazon.de",
+    "content-es": "amazon.es",
+    "content-it": "amazon.it",
+}
 
-def find_urls_in_file(path: Path) -> list[tuple[str, int]]:
-    urls = []
-    try:
-        text = path.read_text(encoding="utf-8")
-        for i, line in enumerate(text.splitlines(), 1):
-            for match in URL_RE.findall(line):
-                parsed = urlparse(match)
-                if parsed.netloc in AMAZON_DOMAINS:
-                    urls.append((match, i))
-    except Exception:
-        pass
-    return urls
+SEASONAL_SLUG_PATTERNS = re.compile(
+    r'(black[-_]?friday|prime[-_]?day|fete[-_]?des[-_]?meres|mothers[-_]?day|'
+    r'noel|christmas|soldes|sales|cyber[-_]?monday)',
+    re.IGNORECASE
+)
+
+URL_RE = re.compile(r'https?://[^\s"\'>\)\]]+')
+DP_RE = re.compile(r'/dp/[A-Z0-9]{10}')
+
+USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
 
 
 def _sanitize_url(url: str) -> str:
@@ -77,14 +75,8 @@ def _sanitize_url(url: str) -> str:
     return urlunparse((parsed.scheme, parsed.netloc, path, parsed.params, query, fragment))
 
 
-def _locale_for_url(url: str) -> str:
-    """Pick Accept-Language that matches the Amazon domain to avoid 404 redirects."""
-    parsed = urlparse(url)
-    return LOCALE_HEADERS.get(parsed.netloc, "en-US,en;q=0.9")
-
-
 def check_url_curl(url: str, timeout: int = 15) -> dict:
-    """Check URL via curl — safest method: minimal headers to avoid Amazon geo-404s."""
+    """Check URL via curl — safest method: minimal headers."""
     clean_url = _sanitize_url(url)
     try:
         result = subprocess.run(
@@ -117,9 +109,18 @@ def check_url_python(url: str, timeout: int = 15) -> dict:
         return {"url": url, "status": None, "ok": False, "error": str(e)}
 
 
-def check_url(url: str, index: int, total: int) -> dict:
-    """Check a URL with rate limiting. Returns ok/uncertain/broken classification."""
-    time.sleep(random.uniform(0.4, 0.9))
+def extract_asin(url: str) -> str | None:
+    """Extract 10-char ASIN from Amazon /dp/ URL."""
+    m = re.search(r'/dp/([A-Z0-9]{10})', url)
+    return m.group(1) if m else None
+
+
+def check_url_with_fallback(url: str, site_name: str) -> dict:
+    """
+    Check a /dp/ URL. For amazon.com 404s, also check the primary locale domain
+    before classifying as broken (US inventory divergence).
+    """
+    time.sleep(random.uniform(0.8, 1.5))
 
     result = check_url_curl(url)
 
@@ -130,22 +131,52 @@ def check_url(url: str, index: int, total: int) -> dict:
 
     status = result.get("status")
 
-    # Amazon aggressively 503-blocks bots on search URLs.
-    # We classify these as uncertain below instead of retrying (retry is too slow).
-    pass
+    # amazon.com fallback: if 404, check same ASIN on primary locale domain
+    parsed = urlparse(url)
+    if status == 404 and parsed.netloc in ("amazon.com", "www.amazon.com"):
+        asin = extract_asin(url)
+        if asin:
+            primary_domain = SITE_PRIMARY_DOMAIN.get(site_name, "amazon.fr")
+            fallback_url = f"https://www.{primary_domain}/dp/{asin}"
+            time.sleep(random.uniform(0.5, 1.0))
+            fb_result = check_url_curl(fallback_url)
+            if fb_result.get("ok"):
+                result["category"] = "ok"
+                result["note"] = f"amazon.com 404 but works on {primary_domain}"
+                return result
 
     if result["ok"]:
         result["category"] = "ok"
     elif status == 404:
-        # 404 on Amazon can mean genuinely gone OR geo-restricted — flag as uncertain
-        result["category"] = "uncertain"
-    elif status == 503 and ("/s?k=" in url or "/search?" in url):
-        # 503 on Amazon search URLs is almost always bot-blocking — not genuinely broken
+        # 404 on /dp/ = genuinely broken product page
+        result["category"] = "broken"
+    elif status == 503:
+        # 503 on /dp/ is usually bot-blocking; flag as uncertain for retry
         result["category"] = "uncertain"
     else:
         result["category"] = "broken"
 
     return result
+
+
+def is_seasonal_file(path: Path) -> bool:
+    """Detect seasonal pages by slug patterns."""
+    return bool(SEASONAL_SLUG_PATTERNS.search(path.name))
+
+
+def find_urls_in_file(path: Path) -> list[tuple[str, int]]:
+    """Find only /dp/ Amazon URLs in a file."""
+    urls = []
+    try:
+        text = path.read_text(encoding="utf-8")
+        for i, line in enumerate(text.splitlines(), 1):
+            for match in URL_RE.findall(line):
+                parsed = urlparse(match)
+                if parsed.netloc in AMAZON_DOMAINS and DP_RE.search(match):
+                    urls.append((match, i))
+    except Exception:
+        pass
+    return urls
 
 
 def scan_site(site_dir: Path) -> list[dict]:
@@ -156,12 +187,14 @@ def scan_site(site_dir: Path) -> list[dict]:
     for cdir in content_dirs:
         for mdx in cdir.rglob("*.mdx"):
             urls = find_urls_in_file(mdx)
+            seasonal = is_seasonal_file(mdx)
             for url, line in urls:
                 results.append({
                     "site": site_dir.name,
                     "file": str(mdx.relative_to(BASE_DIR)),
                     "line": line,
                     "url": url,
+                    "seasonal": seasonal,
                 })
 
     if products_dir.exists():
@@ -173,12 +206,13 @@ def scan_site(site_dir: Path) -> list[dict]:
                     links = item.get("affiliateLinks", [])
                     for link in links:
                         url = link.get("url", "")
-                        if url and urlparse(url).netloc in AMAZON_DOMAINS:
+                        if url and urlparse(url).netloc in AMAZON_DOMAINS and DP_RE.search(url):
                             results.append({
                                 "site": site_dir.name,
                                 "file": str(json_file.relative_to(BASE_DIR)),
                                 "line": 0,
                                 "url": url,
+                                "seasonal": False,
                             })
             except Exception:
                 pass
@@ -186,12 +220,33 @@ def scan_site(site_dir: Path) -> list[dict]:
     return results
 
 
+def save_checkpoint(checked: list, uncertain: list, broken: list, seasonal_broken: list, checkpoint_num: int):
+    """Save partial results so an interrupt doesn't lose everything."""
+    checkpoint_path = REPORTS_DIR / f"broken-links-checkpoint-{checkpoint_num}.json"
+    checkpoint_path.write_text(
+        json.dumps({
+            "generated_at": datetime.now().isoformat(),
+            "checkpoint": checkpoint_num,
+            "checked_so_far": len(checked),
+            "uncertain_count": len(uncertain),
+            "broken_count": len(broken),
+            "seasonal_broken_count": len(seasonal_broken),
+            "checked": checked,
+            "uncertain": uncertain,
+            "broken": broken,
+            "seasonal_broken": seasonal_broken,
+        }, indent=2, ensure_ascii=False, default=str),
+        encoding="utf-8",
+    )
+    print(f"   💾 Checkpoint {checkpoint_num} saved ({len(checked)} checked)")
+
+
 def main():
     print("=" * 60)
-    print("Broken Affiliate Link Monitor")
+    print("Broken Affiliate Link Monitor v2")
     print("=" * 60)
-    print("Note: Uses slow requests (~1/sec) + curl fallback to avoid Amazon bot blocks.")
-    print("This may take ~30 minutes for 1700 URLs.")
+    print("Only checks /dp/ product URLs. Search links (/s?k=) are skipped.")
+    print("Amazon.com 404s get fallback-checked on the site's primary domain.")
     print("=" * 60)
 
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -211,31 +266,48 @@ def main():
                 seen.add(key)
                 unique.append(link)
         all_links.extend(unique)
-        print(f"   Found {len(unique)} unique Amazon URLs")
+        print(f"   Found {len(unique)} unique /dp/ URLs")
 
     total = len(all_links)
-    print(f"\n🔍 Checking {total} unique URLs (slow mode, ~1 req/sec)...")
+    print(f"\n🔍 Checking {total} /dp/ URLs (~1 req/sec)...")
     print("   Press Ctrl+C to interrupt and save partial results.\n")
 
-    uncertain = []   # 404s — may be geo-restricted, not necessarily broken
-    broken = []      # Connection errors, timeouts — definitely problematic
-    checked = 0
+    uncertain = []
+    broken = []
+    seasonal_broken = []
+    checked = []
+    checkpoint_counter = 0
+
     try:
         for i, link in enumerate(all_links):
-            checked += 1
-            result = check_url(link["url"], i, total)
-            progress = f"[{checked}/{total}]"
+            result = check_url_with_fallback(link["url"], link["site"])
+            checked.append({**link, **result})
+            progress = f"[{i+1}/{total}]"
             cat = result.get("category", "ok")
+
             if cat == "ok":
-                print(f"   {progress} ✅ {link['url'][:70]}...")
+                note = result.get("note", "")
+                icon = "🌐" if note else "✅"
+                print(f"   {progress} {icon} {link['url'][:70]}...")
             elif cat == "uncertain":
                 uncertain.append({**link, **result})
                 status = result.get("status") or "ERR"
                 print(f"   {progress} ⚠️  {status} (uncertain) — {link['url'][:70]}...")
             else:
-                broken.append({**link, **result})
-                status = result.get("status") or "ERR"
-                print(f"   {progress} ❌ {status} (broken) — {link['url'][:70]}...")
+                if link.get("seasonal"):
+                    seasonal_broken.append({**link, **result})
+                    status = result.get("status") or "ERR"
+                    print(f"   {progress} 🎄 {status} (seasonal broken) — {link['url'][:70]}...")
+                else:
+                    broken.append({**link, **result})
+                    status = result.get("status") or "ERR"
+                    print(f"   {progress} ❌ {status} (broken) — {link['url'][:70]}...")
+
+            # Save checkpoint every 50 URLs
+            if (i + 1) % 50 == 0:
+                checkpoint_counter += 1
+                save_checkpoint(checked, uncertain, broken, seasonal_broken, checkpoint_counter)
+
     except KeyboardInterrupt:
         print("\n\n⚠️ Interrupted by user. Saving partial results...")
 
@@ -243,18 +315,33 @@ def main():
     lines = [
         f"# 🔗 Broken Affiliate Link Report — {today}",
         "",
-        f"**Total URLs checked:** {checked} / {total}",
-        f"**Healthy:** {checked - len(uncertain) - len(broken)}",
-        f"**Uncertain (404 / geo-restricted):** {len(uncertain)}",
-        f"**Confirmed broken (timeout/connection error):** {len(broken)}",
+        f"**Total /dp/ URLs checked:** {len(checked)} / {total}",
+        f"**Healthy:** {len([c for c in checked if c.get('category') == 'ok'])}",
+        f"**Uncertain (503/bot-blocked):** {len(uncertain)}",
+        f"**Confirmed broken:** {len(broken)}",
+        f"**Seasonal broken (expected rot):** {len(seasonal_broken)}",
         "",
     ]
 
-    if uncertain:
-        lines.append("## ⚠️ Uncertain Links (404 — may be geo-restricted)")
+    if seasonal_broken:
+        lines.append("## 🎄 Seasonal Broken Links (High Expected Rot)")
         lines.append("")
-        lines.append("These returned HTTP 404. Some may be genuinely unavailable; others may be geo-blocked.")
-        lines.append("Manual verification recommended before replacing.")
+        lines.append("These are from seasonal pages (Black Friday, Prime Day, etc). "
+                     "Products are often delisted after events. Consider converting to `/s?k=` search links.")
+        lines.append("")
+        lines.append("| Site | File | Line | Status | URL |")
+        lines.append("|------|------|------|--------|-----|")
+        for b in seasonal_broken:
+            status = b.get("status") or "ERR"
+            file_short = f"`{b['file']}`"
+            url_short = b["url"][:120] + "..." if len(b["url"]) > 120 else b["url"]
+            lines.append(f"| {b['site']} | {file_short} | {b['line']} | {status} | {url_short} |")
+        lines.append("")
+
+    if uncertain:
+        lines.append("## ⚠️ Uncertain Links (503 — likely bot-blocking)")
+        lines.append("")
+        lines.append("These returned HTTP 503. Retry later or verify manually.")
         lines.append("")
         lines.append("| Site | File | Line | Status | URL |")
         lines.append("|------|------|------|--------|-----|")
@@ -266,7 +353,7 @@ def main():
         lines.append("")
 
     if broken:
-        lines.append("## ❌ Confirmed Broken Links")
+        lines.append("## ❌ Confirmed Broken /dp/ Links")
         lines.append("")
         lines.append("| Site | File | Line | Status | URL |")
         lines.append("|------|------|------|--------|-----|")
@@ -277,8 +364,8 @@ def main():
             lines.append(f"| {b['site']} | {file_short} | {b['line']} | {status} | {url_short} |")
         lines.append("")
 
-    if not uncertain and not broken:
-        lines.append("✅ All checked affiliate links are healthy.")
+    if not uncertain and not broken and not seasonal_broken:
+        lines.append("✅ All checked /dp/ affiliate links are healthy.")
         lines.append("")
 
     lines.extend(["*Report generated automatically*", ""])
@@ -290,23 +377,30 @@ def main():
     json_path.write_text(
         json.dumps({
             "generated_at": datetime.now().isoformat(),
-            "total_checked": checked,
+            "total_checked": len(checked),
             "total_urls": total,
             "uncertain_count": len(uncertain),
             "broken_count": len(broken),
+            "seasonal_broken_count": len(seasonal_broken),
             "uncertain": uncertain,
             "broken": broken,
+            "seasonal_broken": seasonal_broken,
         }, indent=2, ensure_ascii=False, default=str),
         encoding="utf-8",
     )
     print(f"✅ JSON snapshot saved: {json_path}")
 
+    # Clean up old checkpoints
+    for cp in REPORTS_DIR.glob("broken-links-checkpoint-*.json"):
+        cp.unlink()
+    print("🧹 Old checkpoints cleaned up")
+
     if broken:
-        msg = f"{len(broken)} liens affiliés cassés confirmés"
+        msg = f"{len(broken)} liens affiliés /dp/ cassés confirmés"
         script = f'display notification "{msg}" with title "Broken Link Monitor" subtitle "Rapport du {today}" sound name "Glass"'
         os.system(f"osascript -e '{script}' 2>/dev/null")
 
-    print(f"\n✨ Done — {len(broken)} broken, {len(uncertain)} uncertain, {checked - len(broken) - len(uncertain)} ok")
+    print(f"\n✨ Done — {len(broken)} broken, {len(seasonal_broken)} seasonal, {len(uncertain)} uncertain, {len(checked) - len(broken) - len(seasonal_broken) - len(uncertain)} ok")
 
 
 if __name__ == "__main__":
