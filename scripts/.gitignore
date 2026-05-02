@@ -1,0 +1,5 @@
+# scripts-local artefacts
+node_modules/
+__pycache__/
+*.pyc
+.venv/

@@ -1,0 +1,1032 @@
+{
+  "generatedAt": "2026-05-02T19:10:07.656Z",
+  "durationMs": 152336,
+  "sites": [
+    {
+      "key": "aspirateur",
+      "name": "Zoom Aspirateurs",
+      "url": "https://www.zoom-aspirateurs.fr/",
+      "homepageStatus": null,
+      "homepageError": "Homepage navigation failed: page.goto: net::ERR_NAME_NOT_RESOLVED at https://www.zoom-aspirateurs.fr/\nCall log:\n\u001b[2m  - navigating to \"https://www.zoom-aspirateurs.fr/\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "articleResults": [],
+      "localeResults": [],
+      "durationMs": 291,
+      "passed": false
+    },
+    {
+      "key": "bureau",
+      "name": "Bureau Expert",
+      "url": "https://www.bureau-expert.fr/",
+      "homepageStatus": 200,
+      "homepageError": null,
+      "articleResults": [
+        {
+          "cardIndex": 0,
+          "cardHref": "/comparatif/meilleures-chaises-ergonomiques-2026/",
+          "cardText": "👨‍💻TélétravailleurConfort toute la journéeVoir les comparatifs →",
+          "topmost": true,
+          "clickNavigated": false,
+          "destStatus": null,
+          "destUrl": null,
+          "destHasContent": null,
+          "amazonCtas": [],
+          "errors": [
+            "Click did NOT navigate. Still at https://www.bureau-expert.fr/ (started at https://www.bureau-expert.fr/)"
+          ],
+          "screenshot": "/Users/gho/Documents/affiliation-sites/reports/cro-tester/bureau/2026-05-02T19-07-54-755Z-no-navigation-card0.png"
+        },
+        {
+          "cardIndex": 1,
+          "cardHref": "/comparatif/chaise-ergonomique-mal-de-dos-2026/",
+          "cardText": "🦴Mal de dosSoutien lombaire optimalVoir les comparatifs →",
+          "topmost": true,
+          "clickNavigated": false,
+          "destStatus": null,
+          "destUrl": null,
+          "destHasContent": null,
+          "amazonCtas": [],
+          "errors": [
+            "Click did NOT navigate. Still at https://www.bureau-expert.fr/ (started at https://www.bureau-expert.fr/)"
+          ],
+          "screenshot": "/Users/gho/Documents/affiliation-sites/reports/cro-tester/bureau/2026-05-02T19-08-07-345Z-no-navigation-card1.png"
+        },
+        {
+          "cardIndex": 2,
+          "cardHref": "/comparatif/meilleure-chaise-ergonomique-moins-300-euros/",
+          "cardText": "💰Petit budgetLa qualité sans se ruinerVoir les comparatifs →",
+          "topmost": true,
+          "clickNavigated": false,
+          "destStatus": null,
+          "destUrl": null,
+          "destHasContent": null,
+          "amazonCtas": [],
+          "errors": [
+            "Click did NOT navigate. Still at https://www.bureau-expert.fr/ (started at https://www.bureau-expert.fr/)"
+          ],
+          "screenshot": "/Users/gho/Documents/affiliation-sites/reports/cro-tester/bureau/2026-05-02T19-08-18-412Z-no-navigation-card2.png"
+        },
+        {
+          "cardIndex": 3,
+          "cardHref": "/test/test-flexispot-e7/",
+          "cardText": "Lire le test complet →",
+          "topmost": false,
+          "clickNavigated": false,
+          "destStatus": null,
+          "destUrl": null,
+          "destHasContent": null,
+          "amazonCtas": [],
+          "errors": [
+            "Anchor is NOT the topmost element at its centre — likely covered by an overlay (CRO-blocking bug)",
+            "Click threw: locator.click: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('main a[href=\"/test/test-flexispot-e7/\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <a href=\"/test/test-flexispot-e7/\" class=\"block text-center text-xs text-primary mt-2 hover:underline\">…</a>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"fixed inset-0 z-[9999] flex items-center justify-center p-4\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"fixed inset-0 z-[9999] flex items-center justify-center p-4\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    8 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"fixed inset-0 z-[9999] flex items-center justify-center p-4\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n",
+            "Click did NOT navigate. Still at https://www.bureau-expert.fr/ (started at https://www.bureau-expert.fr/)"
+          ],
+          "screenshot": "/Users/gho/Documents/affiliation-sites/reports/cro-tester/bureau/2026-05-02T19-08-29-609Z-no-navigation-card3.png"
+        },
+        {
+          "cardIndex": 4,
+          "cardHref": "/test/test-herman-miller-aeron/",
+          "cardText": "Lire le test complet →",
+          "topmost": false,
+          "clickNavigated": false,
+          "destStatus": null,
+          "destUrl": null,
+          "destHasContent": null,
+          "amazonCtas": [],
+          "errors": [
+            "Anchor is NOT the topmost element at its centre — likely covered by an overlay (CRO-blocking bug)",
+            "Click threw: locator.click: Timeout 5000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('main a[href=\"/test/test-herman-miller-aeron/\"]').first()\u001b[22m\n\u001b[2m    - locator resolved to <a href=\"/test/test-herman-miller-aeron/\" class=\"block text-center text-xs text-primary mt-2 hover:underline\">…</a>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"fixed inset-0 z-[9999] flex items-center justify-center p-4\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div class=\"p-6 pt-5\">…</div> from <div class=\"fixed inset-0 z-[9999] flex items-center justify-center p-4\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  2 × retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m      - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"fixed inset-0 z-[9999] flex items-center justify-center p-4\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div class=\"fixed inset-0 z-[9999] flex items-center justify-center p-4\">…</div> intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - <div class=\"p-6 pt-5\">…</div> from <div class=\"fixed inset-0 z-[9999] flex items-center justify-center p-4\">…</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n",
+            "Click did NOT navigate. Still at https://www.bureau-expert.fr/ (started at https://www.bureau-expert.fr/)"
+          ],
+          "screenshot": "/Users/gho/Documents/affiliation-sites/reports/cro-tester/bureau/2026-05-02T19-08-41-581Z-no-navigation-card4.png"
+        }
+      ],
+      "localeResults": [
+        {
+          "locale": "en",
+          "url": "https://www.bureau-expert.fr/en/",
+          "status": 200,
+          "hasContent": true,
+          "errors": []
+        }
+      ],
+      "durationMs": 66228,
+      "passed": false
+    },
+    {
+      "key": "cafe",
+      "name": "Brewmance",
+      "url": "https://www.brewmance.fr/",
+      "homepageStatus": 200,
+      "homepageError": null,
+      "articleResults": [
+        {
+          "cardIndex": 0,
+          "cardHref": "/guide/guide-quelle-machine-a-cafe-choisir/",
+          "cardText": "Guide d'achat",
+          "topmost": true,
+          "clickNavigated": true,
+          "destStatus": 200,
+          "destUrl": "https://www.brewmance.fr/guide/guide-quelle-machine-a-cafe-choisir/",
+          "destHasContent": true,
+          "amazonCtas": [
+            {
+              "href": "https://www.amazon.fr/s?k=Nespresso+Inissia&tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BWSFGQ49?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B09CGSCBK5?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            }
+          ],
+          "errors": []
+        },
+        {
+          "cardIndex": 1,
+          "cardHref": "/guide/cadeau-cafe/",
+          "cardText": "Pour offrir en cadeauLe cadeau café parfaitVoir les machines →",
+          "topmost": true,
+          "clickNavigated": true,
+          "destStatus": 200,
+          "destUrl": "https://www.brewmance.fr/guide/cadeau-cafe/",
+          "destHasContent": true,
+          "amazonCtas": [
+            {
+              "href": "https://www.amazon.fr/dp/B00BVICILG?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/s?k=meilleur+prix+sur+Amazon+%E2%86%92&tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B09CGSCBK5?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0B3JFH9KH?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B00J7AWYRY?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            }
+          ],
+          "errors": []
+        },
+        {
+          "cardIndex": 2,
+          "cardHref": "/comparatif/meilleures-machines-expresso-automatiques-2026/",
+          "cardText": "Pour la maisonMachine compacte pour la maisonVoir les machines →",
+          "topmost": true,
+          "clickNavigated": true,
+          "destStatus": 200,
+          "destUrl": "https://www.brewmance.fr/comparatif/meilleures-machines-expresso-automatiques-2026/",
+          "destHasContent": true,
+          "amazonCtas": [
+            {
+              "href": "https://www.amazon.fr/dp/B09CGSCBK5?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B09CGSCBK5?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0B3JFH9KH?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BWSFGQ49?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B09CGSCBK5?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BWSFGQ49?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B094NJYX1V?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B07Y7J3HSX?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0B3JFH9KH?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B09CGSCBK5?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BWSFGQ49?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B094NJYX1V?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B07Y7J3HSX?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0B3JFH9KH?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B09CGSCBK5?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BWSFGQ49?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B094NJYX1V?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B09CGSCBK5?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            }
+          ],
+          "errors": []
+        },
+        {
+          "cardIndex": 3,
+          "cardHref": "/comparatif/meilleures-machines-cafe-grains-automatiques-2026/",
+          "cardText": "Amateur de grainPour les amateurs de grainVoir les machines →",
+          "topmost": true,
+          "clickNavigated": true,
+          "destStatus": 200,
+          "destUrl": "https://www.brewmance.fr/comparatif/meilleures-machines-cafe-grains-automatiques-2026/",
+          "destHasContent": true,
+          "amazonCtas": [
+            {
+              "href": "https://www.amazon.fr/s?k=prix&tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B08L5V5JGJ?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/s?k=prix&tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/s?k=prix&tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B08L5V5JGJ?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/s?k=prix&tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            }
+          ],
+          "errors": []
+        },
+        {
+          "cardIndex": 4,
+          "cardHref": "/test/test-jura-e8/",
+          "cardText": "Lire le test complet",
+          "topmost": true,
+          "clickNavigated": true,
+          "destStatus": 200,
+          "destUrl": "https://www.brewmance.fr/test/test-jura-e8/",
+          "destHasContent": true,
+          "amazonCtas": [
+            {
+              "href": "https://amzn.to/3OrxjhH",
+              "tag": null,
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/s?k=Jura+E8+machine+cafe&tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://amzn.to/3OrxjhH",
+              "tag": null,
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B074M95W3M?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B07D5T3514?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B00006IUWA?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            }
+          ],
+          "errors": []
+        }
+      ],
+      "localeResults": [
+        {
+          "locale": "en",
+          "url": "https://www.brewmance.fr/en/",
+          "status": 200,
+          "hasContent": true,
+          "errors": []
+        }
+      ],
+      "durationMs": 25988,
+      "passed": true
+    },
+    {
+      "key": "matelas",
+      "name": "Zoom Matelas",
+      "url": "https://www.zoom-matelas.fr/",
+      "homepageStatus": null,
+      "homepageError": "Homepage navigation failed: page.goto: net::ERR_NAME_NOT_RESOLVED at https://www.zoom-matelas.fr/\nCall log:\n\u001b[2m  - navigating to \"https://www.zoom-matelas.fr/\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "articleResults": [],
+      "localeResults": [],
+      "durationMs": 270,
+      "passed": false
+    },
+    {
+      "key": "pixinstant",
+      "name": "Pix Instant",
+      "url": "https://www.pixinstant.com/",
+      "homepageStatus": 200,
+      "homepageError": null,
+      "articleResults": [
+        {
+          "cardIndex": 0,
+          "cardHref": "/guide/cadeau-photo-instantanee/",
+          "cardText": "Pour offrir en cadeauLe cadeau photo parfaitVoir les appareils →",
+          "topmost": false,
+          "clickNavigated": true,
+          "destStatus": 200,
+          "destUrl": "https://www.pixinstant.com/guide/cadeau-photo-instantanee/",
+          "destHasContent": true,
+          "amazonCtas": [
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVN4LLMQ?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVNG3LC4?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B084S4FD5W?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0B1QT6GRC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVN4LLMQ?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVNG3LC4?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVN4LLMQ?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVNG3LC4?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0B1QT6GRC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            }
+          ],
+          "errors": [
+            "Anchor is NOT the topmost element at its centre — likely covered by an overlay (CRO-blocking bug)"
+          ]
+        },
+        {
+          "cardIndex": 1,
+          "cardHref": "/comparatif/meilleurs-appareils-photo-instantanes-2026/",
+          "cardText": "Pour les voyagesCompact et facile à transporterVoir les appareils →",
+          "topmost": false,
+          "clickNavigated": true,
+          "destStatus": 200,
+          "destUrl": "https://www.pixinstant.com/comparatif/meilleurs-appareils-photo-instantanes-2026/",
+          "destHasContent": true,
+          "amazonCtas": [
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B084S4CMTB?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVN4LLMQ?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVNG3LC4?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B084S4CMTB?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVN4LLMQ?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVNG3LC4?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B084S4CMTB?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVN4LLMQ?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVNG3LC4?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVN4LLMQ?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVN4LLMQ?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVNG3LC4?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVNG3LC4?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B084S4FD5W?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B084S4FD5W?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVNG3LC4?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVN4LLMQ?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVNG3LC4?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVN4LLMQ?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B084S4CMTB?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            }
+          ],
+          "errors": [
+            "Anchor is NOT the topmost element at its centre — likely covered by an overlay (CRO-blocking bug)"
+          ]
+        },
+        {
+          "cardIndex": 2,
+          "cardHref": "/comparatif/meilleur-instax-mini-2026/",
+          "cardText": "Pour les créatifsEffets et modes créatifsVoir les appareils →",
+          "topmost": true,
+          "clickNavigated": true,
+          "destStatus": 200,
+          "destUrl": "https://www.pixinstant.com/comparatif/meilleur-instax-mini-2026/",
+          "destHasContent": true,
+          "amazonCtas": [
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B084S4CMTB?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B084S4CMTB?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B084S4CMTB?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B084S4FD5W?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B084S4FD5W?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B084S4FD5W?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B084S4CMTB?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVNG3LC4?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVN4LLMQ?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            }
+          ],
+          "errors": []
+        },
+        {
+          "cardIndex": 3,
+          "cardHref": "/guide/instax-mini-12-bebe-naissance/",
+          "cardText": "Cadeau naissanceCapturer les premiers instantsVoir les appareils →",
+          "topmost": true,
+          "clickNavigated": true,
+          "destStatus": 200,
+          "destUrl": "https://www.pixinstant.com/guide/instax-mini-12-bebe-naissance/",
+          "destHasContent": true,
+          "amazonCtas": [
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0000C73CQ?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0000C73CQ?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0000C73CQ?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0000C73CQ?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            }
+          ],
+          "errors": []
+        },
+        {
+          "cardIndex": 4,
+          "cardHref": "/test/test-instax-square-sq40/",
+          "cardText": "Lire le test complet →",
+          "topmost": true,
+          "clickNavigated": true,
+          "destStatus": 200,
+          "destUrl": "https://www.pixinstant.com/test/test-instax-square-sq40/",
+          "destHasContent": true,
+          "amazonCtas": [
+            {
+              "href": "https://www.amazon.fr/dp/B0C5JPYF86?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0C5JPYF86?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0C5JPYF86?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B084S4CMTB?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0B1QT6GRC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0C5JPYF86?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B084S4CMTB?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0B1QT6GRC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0C5JPYF86?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0CWLVF7WC?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B084S4CMTB?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BV38RWKK?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0BVNG3LC4?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            },
+            {
+              "href": "https://www.amazon.fr/dp/B0C5JPYF86?tag=zoomzen05-21",
+              "tag": "zoomzen05-21",
+              "tagOk": true
+            }
+          ],
+          "errors": []
+        }
+      ],
+      "localeResults": [
+        {
+          "locale": "en",
+          "url": "https://www.pixinstant.com/en/",
+          "status": 200,
+          "hasContent": true,
+          "errors": []
+        }
+      ],
+      "durationMs": 25707,
+      "passed": false
+    }
+  ],
+  "summary": {
+    "totalArticles": 15,
+    "passedArticles": 8,
+    "failedArticles": 7,
+    "totalCtas": 144,
+    "passedCtas": 144,
+    "failedCtas": 0,
+    "sitesPassed": 1,
+    "sitesFailed": 4
+  },
+  "notes": []
+}

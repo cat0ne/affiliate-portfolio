@@ -49,3 +49,55 @@ python scripts/update-amazon-prices.py
 4. Commit both the configuration change and the updated `public/amazon-prices.json`.
 
 > **Note:** Keep `scripts/requirements.txt` up to date with any Python packages the price update script (or other scripts) depend on.
+
+## CRO / link smoke test
+
+`cro-link-tester.ts` is a Playwright-based smoke test that catches client-side
+breakage on the 5 production affiliation sites — specifically the class of bugs
+where homepage HTML *looks* correct (article URLs return 200, anchors are
+rendered) but clicks on those anchors do not actually navigate (overlays,
+hydration crashes, swallowed click handlers, etc.).
+
+For each site it:
+
+1. Loads the homepage and waits for network idle.
+2. Picks the first N article cards in `<main>` (default 5, configurable).
+3. For each card: verifies it is the topmost element under its centre point,
+   actually clicks it, and waits for navigation. If no navigation happens within
+   ~10s, the card is flagged as a CRO bug and a full-page screenshot is captured
+   to `reports/cro-tester/<site>/`.
+4. On the destination page: confirms HTTP 200, an `<h1>` or `<article>` is
+   rendered, and every Amazon CTA `<a>` has a `tag=` matching one of the known
+   per-site Associates IDs (FR `zoomzen05-21`, EN/US `zoomzus-20`, DE
+   `zoomzen-21`, IT `zoomzen01-21`, ES `zoomzen08-21`, UK `zoomzen07-21`).
+5. Hits `/en/` per site to confirm locale switching works.
+
+### Running
+
+```bash
+# One-time: install deps + Chromium browser (cached afterwards).
+cd scripts && npm install && npx playwright install chromium
+
+# Run the tester (headless, all sites).
+./scripts/run-cro-tester.sh
+
+# Single site, with visible browser for debugging.
+./scripts/run-cro-tester.sh --site bureau --headed
+
+# Test more cards per site.
+./scripts/run-cro-tester.sh --max-articles 8
+```
+
+### Output
+
+- `reports/cro-tester-YYYY-MM-DD.json` — structured report (machine-readable).
+- `reports/cro-tester-latest.md` — Markdown summary with per-site pass/fail.
+- `reports/cro-tester/<site>/<timestamp>-<failure>.png` — screenshots on failure.
+
+Exit code is 0 on all-pass, 1 on any failure — suitable as a pre-deploy gate.
+
+### Constraints
+
+- Read-only on the sites: nothing in `bureau/`, `aspirateur/`, etc. is touched.
+- Total run time targets ~3 minutes for all 5 sites with default settings.
+- If a site is temporarily down, it is logged and the run continues.
