@@ -110,6 +110,37 @@ def fetch_period(service, site, days):
     }
 
 
+def check_query_position_drops(current_queries, previous_queries, site_name, min_impressions=50):
+    """Flag individual queries that dropped >3 positions between periods."""
+    prev_map = {q["keys"][0]: q for q in previous_queries}
+    alerts = []
+    for q in current_queries:
+        query = q["keys"][0]
+        curr_pos = round(q["position"], 2)
+        curr_imp = int(q["impressions"])
+        if curr_imp < min_impressions:
+            continue
+        prev_r = prev_map.get(query)
+        if not prev_r:
+            continue
+        prev_pos = round(prev_r["position"], 2)
+        # A drop means position number increased (e.g. 5 → 8)
+        drop = curr_pos - prev_pos
+        if drop > 3:
+            alerts.append({
+                "site": site_name,
+                "type": "query_position_drop",
+                "severity": "high" if drop > 10 else "medium",
+                "message": f"Query '{query}' dropped {drop:.1f} positions ({prev_pos} → {curr_pos})",
+                "query": query,
+                "current_position": curr_pos,
+                "previous_position": prev_pos,
+                "current_impressions": curr_imp,
+                "previous_impressions": int(prev_r["impressions"]),
+            })
+    return alerts
+
+
 def check_alerts(current, previous, site_name):
     alerts = []
     cp = current["performance"]
@@ -296,10 +327,16 @@ def main():
             "pages": prev_page_data,
         }
 
+        # Query-level position tracking
+        curr_queries = query_gsc(service, site["url"], current["start"], current["end"], dimensions=["query"], row_limit=5000)
+        prev_queries = query_gsc(service, site["url"], start_prev_s, end_prev_s, dimensions=["query"], row_limit=5000)
+        query_pos_alerts = check_query_position_drops(curr_queries, prev_queries, site["name"])
+
         print(f"  Current: {current['start']} → {current['end']} | Clicks: {current['performance']['clicks']}")
         print(f"  Previous: {previous['start']} → {previous['end']} | Clicks: {previous['performance']['clicks']}")
 
         alerts = check_alerts(current, previous, site["name"])
+        alerts.extend(query_pos_alerts)
         if alerts:
             print(f"  🚨 {len(alerts)} alert(s) triggered")
             for a in alerts:
@@ -335,6 +372,20 @@ def main():
         encoding="utf-8",
     )
     print(f"✅ JSON snapshot saved: {json_path}")
+
+    # Position alerts JSON
+    position_alerts = [a for a in all_alerts if a["type"] == "query_position_drop"]
+    pos_json_path = REPORTS_DIR / "gsc-position-alerts.json"
+    pos_json_path.write_text(
+        json.dumps({
+            "generated_at": datetime.now().isoformat(),
+            "days": days,
+            "total_position_alerts": len(position_alerts),
+            "alerts": position_alerts,
+        }, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    print(f"✅ Position alerts saved: {pos_json_path}")
 
     if all_alerts:
         msg = f"{len(all_alerts)} alerte(s) GSC détectée(s)"

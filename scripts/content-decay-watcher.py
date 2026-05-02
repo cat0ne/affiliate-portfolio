@@ -150,6 +150,8 @@ def get_recommendation(days):
         return "archive"
     if days > 365:
         return "rewrite"
+    if days > 180:
+        return "refresh"
     if days > STALE_DAYS:
         return "maj"
     return "ok"
@@ -274,7 +276,7 @@ def generate_markdown(stale, thin, outdated):
             lines.append("| Titre | Slug | Dernière modif | Jours | Recommandation |")
             lines.append("|-------|------|----------------|-------|----------------|")
             for it in items[:10]:  # limit to top 10 per site
-                rec_emoji = {"archive": "🗑️", "rewrite": "✍️", "maj": "🔄", "ok": "✅"}.get(it["recommendation"], "")
+                rec_emoji = {"archive": "🗑️", "rewrite": "✍️", "refresh": "🔁", "maj": "🔄", "ok": "✅"}.get(it["recommendation"], "")
                 title_short = it["title"][:50] + "..." if len(it["title"]) > 50 else it["title"]
                 lines.append(
                     f"| {title_short} | `{it['slug']}` | {it['last_modified']} | {it['days_since']} | {rec_emoji} {it['recommendation']} |"
@@ -341,6 +343,7 @@ def generate_markdown(stale, thin, outdated):
         "## 💡 Plan d'action",
         "",
         f"- **maj** → Rafraîchir les données (prix, dispos, FAQ), mettre à jour `dateModified`.",
+        f"- **refresh** → Révision approfondie (> 180 jours) : mettre à jour les critères, ajouter des sections, vérifier les liens.",
         f"- **rewrite** → Réécriture partielle ou complète du contenu, nouveau angle SEO.",
         f"- **archive** → Contenu obsolète, redirection 301 ou noindex.",
         f"- **expand** → Contenu fin (< {THIN_THRESHOLD} mots) : ajouter des sections, approfondir les critères, enrichir les FAQ.",
@@ -398,6 +401,34 @@ def main():
         encoding="utf-8",
     )
     print(f"✅ JSON snapshot saved: {json_path}")
+
+    # Build recommendations for articles > 180 days old
+    recommendations = []
+    for item in all_stale:
+        if item["days_since"] > 180:
+            recommendations.append({
+                "site": item["site"],
+                "locale": item["locale"],
+                "title": item["title"],
+                "slug": item["slug"],
+                "path": item["path"],
+                "last_modified": item["last_modified"],
+                "days_since": item["days_since"],
+                "recommendation": item["recommendation"],
+            })
+
+    rec_path = REPORTS_DIR / "content-decay-recommendations.json"
+    rec_path.write_text(
+        json.dumps({
+            "generated_at": datetime.now().isoformat(),
+            "threshold_days": STALE_DAYS,
+            "refresh_threshold_days": 180,
+            "total_recommendations": len(recommendations),
+            "recommendations": recommendations,
+        }, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    print(f"✅ Recommendations saved: {rec_path}")
 
     total_flagged = len(all_stale) + len(all_thin) + len(all_outdated)
     if total_flagged:
