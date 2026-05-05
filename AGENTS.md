@@ -28,13 +28,27 @@ Use the correct **tracking ID** for each locale when generating or rewriting Ama
 
 ## Sites
 
-| Site         | Directory   | Domain              | Niche               |
-|--------------|-------------|---------------------|---------------------|
-| Matelas      | `matelas/`  | `matelas-expert.fr` | Mattress reviews    |
-| Aspirateur   | `aspirateur/`| `top-aspirateur.fr` | Vacuum reviews      |
-| Cafe         | `cafe/`     | `brewmance.fr`      | Coffee machines     |
-| PixInstant   | `pixinstant/`| `pixinstant.com`   | Instant cameras     |
-| Bureau       | `bureau/`   | `bureau-expert.fr`  | Office furniture    |
+| Site           | URL production                | Repo GitHub                                      |
+|----------------|-------------------------------|--------------------------------------------------|
+| SafeHive       | https://safehivehq.com        | https://github.com/cat0ne/affiliate-suite        |
+| AirPurify      | https://airpurify.com         | (same repo)                                      |
+| PawHive        | https://pawhivehq.com         | (same repo)                                      |
+| Matelas Expert | https://www.matelas-expert.fr | https://github.com/cat0ne/matelas-literie        |
+| Top-Aspirateur | https://www.top-aspirateur.fr | https://github.com/cat0ne/meilleur-aspirateur    |
+| Brewmance      | https://www.brewmance.fr      | https://github.com/cat0ne/affiliation-cafe       |
+| PixInstant     | https://www.pixinstant.com    | https://github.com/cat0ne/affiliation-pixinstant |
+| Bureau Expert  | https://www.bureau-expert.fr  | https://github.com/cat0ne/bureau-expert          |
+
+> **Note:** SafeHive, AirPurify and PawHive share the same monorepo (`affiliate-suite`). The 5 legacy sites (Matelas, Aspirateur, Café, PixInstant, Bureau) are separate repos.
+>
+> **Legacy directory mapping:**
+> | Site         | Directory     |
+> |--------------|---------------|
+> | Matelas      | `matelas/`    |
+> | Aspirateur   | `aspirateur/` |
+> | Cafe         | `cafe/`       |
+> | PixInstant   | `pixinstant/` |
+> | Bureau       | `bureau/`     |
 
 ## Stack (all sites)
 
