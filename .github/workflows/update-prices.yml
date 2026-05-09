@@ -1,0 +1,82 @@
+name: Update Amazon Prices
+
+# Scheduled workflow that fetches the latest Amazon prices for all tracked
+# products across the 5 affiliate sites and commits updated price snapshots
+# to main. AWS Amplify rebuilds each site on every push, so the new prices
+# go live automatically.
+#
+# Required repository secrets (choose ONE auth method):
+#
+#   Amazon Creators API (RECOMMENDED):
+#     PRICE_UPDATE_PAT            — Personal Access Token with repo contents:write scope
+#     CREATORS_API_CLIENT_ID      — Your Creators API credential ID
+#     CREATORS_API_CLIENT_SECRET  — Your Creators API credential secret
+#
+#   PA-API OAuth 2.0:
+#     PRICE_UPDATE_PAT      — Personal Access Token with repo contents:write scope
+#     PA_API_CLIENT_ID      — Login with Amazon OAuth client ID
+#     PA_API_CLIENT_SECRET  — Login with Amazon OAuth client secret
+#
+#   PA-API AWS SigV4 (legacy):
+#     PRICE_UPDATE_PAT      — Personal Access Token with repo contents:write scope
+#     PA_API_ACCESS_KEY     — AWS Access Key for PA-API
+#     PA_API_SECRET_KEY     — AWS Secret Key for PA-API
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"  # Every Monday at 06:00 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: update-prices
+  cancel-in-progress: false
+
+jobs:
+  update-prices:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PRICE_UPDATE_PAT }}
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Run price update script
+        env:
+          # Creators API (recommended)
+          CREATORS_API_CLIENT_ID: ${{ secrets.CREATORS_API_CLIENT_ID }}
+          CREATORS_API_CLIENT_SECRET: ${{ secrets.CREATORS_API_CLIENT_SECRET }}
+          # PA-API OAuth 2.0 credentials
+          PA_API_CLIENT_ID: ${{ secrets.PA_API_CLIENT_ID }}
+          PA_API_CLIENT_SECRET: ${{ secrets.PA_API_CLIENT_SECRET }}
+          # PA-API AWS SigV4 credentials (legacy fallback)
+          PA_API_ACCESS_KEY: ${{ secrets.PA_API_ACCESS_KEY }}
+          PA_API_SECRET_KEY: ${{ secrets.PA_API_SECRET_KEY }}
+        run: python scripts/update-amazon-prices.py
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet -- '*/public/amazon-prices.json'; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push updated prices
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -- '*/public/amazon-prices.json'
+          git commit -m "chore: auto-update Amazon prices [skip ci]"
+          git push origin main

@@ -1,0 +1,124 @@
+name: Daily Automation & Alerts
+
+# Runs daily at 06:00 UTC. Executes price-drop alerts, content-decay watcher,
+# and GSC monitor. Commits generated reports back to the repo.
+#
+# Optional: amazon-reporting-api.py runs only when credentials are configured
+# (CREATORS_API_CLIENT_ID + CREATORS_API_CLIENT_SECRET secrets exist).
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: daily-automation
+  cancel-in-progress: false
+
+jobs:
+  automation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PRICE_UPDATE_PAT }}
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Run price drop alerts
+        run: python scripts/price-drop-alerts.py
+
+      - name: Run content decay watcher
+        run: python scripts/content-decay-watcher.py
+
+      - name: Run GSC monitor
+        env:
+          GSC_CREDENTIALS_JSON: ${{ secrets.GSC_CREDENTIALS_JSON }}
+        run: |
+          if [ -n "$GSC_CREDENTIALS_JSON" ]; then
+            echo "$GSC_CREDENTIALS_JSON" > gsc-credentials.json
+            python scripts/gsc_monitor.py --days 7
+          else
+            echo "⚠️  GSC_CREDENTIALS_JSON not set — skipping GSC monitor"
+          fi
+
+      - name: Run GSC weekly report
+        env:
+          GSC_CREDENTIALS_JSON: ${{ secrets.GSC_CREDENTIALS_JSON }}
+        run: |
+          if [ -n "$GSC_CREDENTIALS_JSON" ]; then
+            echo "$GSC_CREDENTIALS_JSON" > gsc-credentials.json
+            python scripts/gsc_weekly_report.py
+          else
+            echo "⚠️  GSC_CREDENTIALS_JSON not set — skipping GSC weekly report"
+          fi
+
+      - name: Run Amazon reporting API (optional)
+        env:
+          CREATORS_API_CLIENT_ID: ${{ secrets.CREATORS_API_CLIENT_ID }}
+          CREATORS_API_CLIENT_SECRET: ${{ secrets.CREATORS_API_CLIENT_SECRET }}
+          PA_API_ACCESS_KEY: ${{ secrets.PA_API_ACCESS_KEY }}
+          PA_API_SECRET_KEY: ${{ secrets.PA_API_SECRET_KEY }}
+        run: |
+          if [ -n "$CREATORS_API_CLIENT_ID" ] && [ -n "$CREATORS_API_CLIENT_SECRET" ]; then
+            python scripts/amazon-reporting-api.py
+          else
+            echo "ℹ️  Amazon API credentials not configured — skipping reporting API"
+          fi
+
+      - name: Run weekly revenue dashboard
+        run: python scripts/weekly-revenue-dashboard.py
+
+      # ---- New agents (May 2026 audit) ---------------------------------
+      # All three are gated to never break the daily run: they always exit 0,
+      # log warnings on missing creds, and only emit Hermes events when their
+      # data is real.
+      - name: Run real-revenue agent (D)
+        continue-on-error: true
+        env:
+          PA_API_ACCESS_KEY: ${{ secrets.PA_API_ACCESS_KEY }}
+          PA_API_SECRET_KEY: ${{ secrets.PA_API_SECRET_KEY }}
+          CREATORS_API_CLIENT_ID: ${{ secrets.CREATORS_API_CLIENT_ID }}
+          CREATORS_API_CLIENT_SECRET: ${{ secrets.CREATORS_API_CLIENT_SECRET }}
+        run: python scripts/agent_real_revenue.py --daily
+
+      - name: Run CWV agent (A) — PSI top-10 mobile per site
+        continue-on-error: true
+        env:
+          PSI_API_KEY: ${{ secrets.PSI_API_KEY }}
+        run: python scripts/agent_cwv.py --daily --top 10 --strategy mobile
+
+      - name: Run internal-linking agent (B) — orphan rescue
+        continue-on-error: true
+        run: python scripts/agent_internal_linking.py --daily --max 3 --max-cross-site 2
+
+      - name: Run deployment verifier
+        continue-on-error: true
+        run: python scripts/deploy-verifier.py
+
+      - name: Check for report changes
+        id: changes
+        run: |
+          if git diff --quiet -- reports/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push reports
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add reports/
+          git commit -m "chore: auto-update daily reports [skip ci]"
+          git push origin main

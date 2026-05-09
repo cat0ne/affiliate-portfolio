@@ -59,8 +59,10 @@ interface SiteConfig {
 const SITES: SiteConfig[] = [
   {
     key: "aspirateur",
-    name: "Zoom Aspirateurs",
-    url: "https://www.zoom-aspirateurs.fr/",
+    name: "Top-Aspirateur",
+    // Was: https://www.zoom-aspirateurs.fr/ — that domain does not resolve
+    // (DNS error in every CRO test run). Real production host is top-aspirateur.fr.
+    url: "https://www.top-aspirateur.fr/",
     expectedTagFr: "zoomzen05-21",
     expectedTagEn: "zoomzus-20",
     testEnLocale: true,
@@ -83,8 +85,10 @@ const SITES: SiteConfig[] = [
   },
   {
     key: "matelas",
-    name: "Zoom Matelas",
-    url: "https://www.zoom-matelas.fr/",
+    name: "Matelas-Expert",
+    // Was: https://www.zoom-matelas.fr/ — DNS does not resolve (legacy/typo).
+    // Real production host is matelas-expert.fr.
+    url: "https://www.matelas-expert.fr/",
     expectedTagFr: "zoomzen05-21",
     expectedTagEn: "zoomzus-20",
     testEnLocale: true,

@@ -1,1 +1,40 @@
 scripts/AMAZON_API_STATUS.md
+.omx/
+
+# ── Secrets — NEVER commit ─────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+scripts/.env
+scripts/.env.*
+!scripts/.env.example
+gsc-credentials.json
+gsc-credentials.*.json
+*.pem
+*.p12
+*.key
+service-account*.json
+
+# ── Local databases / state ────────────────────────────────────────────
+*.sqlite
+*.sqlite3
+scripts/link_opportunities.db
+hermes-events/
+
+# ── OS / editor cruft ──────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ── Python ─────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# ── Node (top-level scripts) ───────────────────────────────────────────
+scripts/node_modules/
+scripts/playwright-report/
+scripts/.playwright-mcp/
