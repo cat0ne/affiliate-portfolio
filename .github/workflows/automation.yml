@@ -101,6 +101,33 @@ jobs:
         continue-on-error: true
         run: python scripts/agent_internal_linking.py --daily --max 3 --max-cross-site 2
 
+      # ---- Track 1+2+3 follow-up agents (2026-05-09) -------------------
+      - name: Run URL health agent (404→301 + GSC inspection)
+        continue-on-error: true
+        env:
+          GSC_CREDENTIALS_JSON: ${{ secrets.GSC_CREDENTIALS_JSON }}
+        run: |
+          if [ -n "$GSC_CREDENTIALS_JSON" ] && [ ! -f gsc-credentials.json ]; then
+            echo "$GSC_CREDENTIALS_JSON" > gsc-credentials.json
+          fi
+          python scripts/agent_url_health.py --daily --max-redirects 30 --max-inspections 100
+
+      - name: Run syndication agent (FR → EN/DE/IT/ES dispatcher)
+        continue-on-error: true
+        run: python scripts/agent_syndication.py --daily --max 5
+
+      - name: Run CTR optimizer (low-CTR meta variants)
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/agent_ctr_optimizer.py --daily --max 10 --min-impressions 200
+
+      - name: Run canary check (rollback if traffic regresses)
+        continue-on-error: true
+        run: |
+          python scripts/agent_canary.py --consume --limit 50
+          python scripts/agent_canary.py --check --window-h 24
+
       - name: Run deployment verifier
         continue-on-error: true
         run: python scripts/deploy-verifier.py

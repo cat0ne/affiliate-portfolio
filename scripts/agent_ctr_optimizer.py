@@ -1,0 +1,626 @@
+#!/usr/bin/env python3
+"""
+Agent CTR Optimizer — finds low-CTR pages and proposes meta title/description
+variants for the CRO Optimizer to apply.
+
+Why this exists
+---------------
+PostHog feature flags are referenced in DEPLOYMENT_CHECKLIST but
+NEXT_PUBLIC_POSTHOG_KEY isn't set in production (verified in Playwright
+console logs), so a true client-side A/B framework would mean shipping
+new client code to 5 sites — high-risk.
+
+Instead, this agent runs the *server-side iteration loop* that actually
+moves the needle on most affiliation sites:
+
+  1. For each site, find pages with **high impressions but low CTR vs
+     position** (Google's "average CTR by position" curve from
+     Backlinko Q4 2025 — adjusted per site).
+  2. Generate 3 meta-title variants using proven CTR patterns:
+       - **Number + Year** ("7 Best Foo Mattresses for 2026")
+       - **Question / Pain** ("Which Foo Mattress Is Worth It in 2026?")
+       - **Power word + Trust** ("Ultimate Foo Buyer's Guide (Tested 2026)")
+     Plus 1 LLM-generated variant via Anthropic Claude (when
+     ANTHROPIC_API_KEY is set).
+  3. Score variants vs the current title using:
+       - title length (50–60 chars optimal)
+       - presence of year, number, power word
+       - SERP-pattern fit for query intent
+     and emit `cro.meta_variant_proposed` events for the CRO Optimizer
+     to pick the top variant and rewrite the MDX frontmatter.
+  4. After 14 days, harvest GSC CTR for any page whose meta was rewritten
+     (looked up via `page_metrics.history`); emit `cro.meta_variant_winner`
+     events with measured CTR delta so the strategist can multiply the
+     pattern across the rest of the site.
+
+Outputs
+-------
+* `reports/ctr-opportunities-{site}-{date}.md` per-site
+* Events:
+    - `cro.meta_variant_proposed` per opportunity → CRO Optimizer
+    - `cro.meta_variant_winner`   per measured uplift → Strategist
+    - `ctr_optimizer.run_completed` → Analytics
+
+Usage
+-----
+    python3 agent_ctr_optimizer.py --consume --limit 10
+    python3 agent_ctr_optimizer.py --daily --max 10
+    python3 agent_ctr_optimizer.py --site matelas --min-impressions 500
+    python3 agent_ctr_optimizer.py --measure-winners
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import shutil
+import sqlite3
+import sys
+import uuid
+from datetime import date, datetime, timezone
+from pathlib import Path
+from typing import Any, Optional
+
+# ---------------------------------------------------------------------------
+# .env
+# ---------------------------------------------------------------------------
+
+def _load_env() -> None:
+    env_file = Path(__file__).parent / ".env"
+    if not env_file.exists():
+        return
+    with open(env_file) as fh:
+        for line in fh:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, val = line.split("=", 1)
+            if key not in os.environ:
+                os.environ[key] = val.strip().strip("'").strip('"')
+
+_load_env()
+
+# ---------------------------------------------------------------------------
+# Paths + constants
+# ---------------------------------------------------------------------------
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path("/Users/gho/Documents/affiliation-sites")
+DB_PATH = Path("~/affiliate-machine.db").expanduser()
+REPORTS_DIR = BASE_DIR / "reports"
+EVENTS_BASE = Path.home() / "hermes-events"
+INBOX_DIR = EVENTS_BASE / "inbox"
+PROCESSING_DIR = EVENTS_BASE / "processing"
+COMPLETED_DIR = EVENTS_BASE / "completed"
+FAILED_DIR = EVENTS_BASE / "failed"
+
+REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+for _d in (INBOX_DIR, PROCESSING_DIR, COMPLETED_DIR, FAILED_DIR):
+    _d.mkdir(parents=True, exist_ok=True)
+
+AGENT_NAME = "agent-ctr-optimizer"
+
+CURRENT_YEAR = datetime.now(timezone.utc).year
+
+# Backlinko / Sistrix Q4 2025 average CTR by SERP position (mobile, FR/EN
+# blended). Used to compute "expected CTR" for a given position so we know
+# which pages are punching below their weight.
+EXPECTED_CTR_BY_POSITION: dict[int, float] = {
+    1: 0.275, 2: 0.157, 3: 0.110, 4: 0.080, 5: 0.060,
+    6: 0.045, 7: 0.035, 8: 0.028, 9: 0.022, 10: 0.018,
+    11: 0.014, 12: 0.012, 13: 0.010, 14: 0.009, 15: 0.008,
+    20: 0.005, 30: 0.002, 50: 0.001,
+}
+
+POWER_WORDS_FR = (
+    "ultime", "complet", "exclusif", "vérité", "secrets", "puissant",
+    "incroyable", "essentiel", "définitif", "professionnel", "optimal",
+)
+POWER_WORDS_EN = (
+    "ultimate", "complete", "essential", "definitive", "honest", "real",
+    "tested", "expert", "best", "proven",
+)
+
+SITES: dict[str, dict[str, str]] = {
+    "aspirateur": {"domain": "top-aspirateur.fr", "default_locale": "fr"},
+    "bureau":     {"domain": "bureau-expert.fr",  "default_locale": "fr"},
+    "matelas":    {"domain": "matelas-expert.fr", "default_locale": "fr"},
+    "cafe":       {"domain": "brewmance.fr",      "default_locale": "fr"},
+    "pixinstant": {"domain": "pixinstant.com",    "default_locale": "fr"},
+}
+
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+
+
+# ---------------------------------------------------------------------------
+# DB
+# ---------------------------------------------------------------------------
+
+def _conn() -> sqlite3.Connection:
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def find_low_ctr_pages(site_slug: str, min_impressions: int = 200, top_n: int = 50) -> list[dict[str, Any]]:
+    """Aggregate page_metrics by page, compare actual CTR to expected CTR for
+    avg position. Return pages where actual / expected < 0.7 (under-performing
+    by ≥ 30%)."""
+    with _conn() as conn:
+        rows = conn.execute(
+            """
+            SELECT page_path,
+                   SUM(impressions) AS impressions,
+                   SUM(clicks)      AS clicks,
+                   AVG(position)    AS position
+            FROM page_metrics
+            WHERE site_slug = ? AND impressions IS NOT NULL
+            GROUP BY page_path
+            HAVING SUM(impressions) >= ?
+            ORDER BY SUM(impressions) DESC
+            LIMIT ?
+            """,
+            (site_slug, min_impressions, top_n * 3),
+        ).fetchall()
+
+    out: list[dict[str, Any]] = []
+    for r in rows:
+        impressions = int(r["impressions"] or 0)
+        clicks = int(r["clicks"] or 0)
+        position = float(r["position"] or 0)
+        if impressions == 0:
+            continue
+        actual_ctr = clicks / impressions
+        expected = _expected_ctr(position)
+        ratio = actual_ctr / expected if expected > 0 else 1.0
+        # Lift opportunity = clicks we'd gain if we hit expected CTR
+        opportunity_clicks = max(0, int(impressions * expected) - clicks)
+        if ratio < 0.7 and opportunity_clicks >= 5:
+            out.append({
+                "page_path": r["page_path"],
+                "impressions": impressions,
+                "clicks": clicks,
+                "actual_ctr": round(actual_ctr, 4),
+                "position": round(position, 1),
+                "expected_ctr": round(expected, 4),
+                "ctr_ratio": round(ratio, 2),
+                "opportunity_clicks": opportunity_clicks,
+            })
+    out.sort(key=lambda x: -x["opportunity_clicks"])
+    return out[:top_n]
+
+
+def _expected_ctr(position: float) -> float:
+    if position <= 0:
+        return 0.0
+    pos_int = max(1, int(round(position)))
+    if pos_int in EXPECTED_CTR_BY_POSITION:
+        return EXPECTED_CTR_BY_POSITION[pos_int]
+    # Interpolate to nearest known buckets.
+    keys = sorted(EXPECTED_CTR_BY_POSITION.keys())
+    for k in keys:
+        if k >= pos_int:
+            return EXPECTED_CTR_BY_POSITION[k]
+    return EXPECTED_CTR_BY_POSITION[max(keys)]
+
+
+# ---------------------------------------------------------------------------
+# Frontmatter reader (no yaml dep needed for the simple case)
+# ---------------------------------------------------------------------------
+
+FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---", re.DOTALL)
+
+
+def _slug_from_url(url: str) -> str:
+    if not url:
+        return ""
+    path = url.split("?", 1)[0].split("#", 1)[0].rstrip("/")
+    return path.split("/")[-1] if path else ""
+
+
+def _find_mdx_for_url(site_slug: str, page_url: str) -> Optional[Path]:
+    slug = _slug_from_url(page_url)
+    if not slug:
+        return None
+    site = SITES.get(site_slug)
+    if not site:
+        return None
+    repo = BASE_DIR / site_slug
+    for mdx in repo.rglob(f"content/**/{slug}.mdx"):
+        return mdx
+    return None
+
+
+def _read_meta(mdx_path: Path) -> dict[str, str]:
+    try:
+        text = mdx_path.read_text(encoding="utf-8")
+    except OSError:
+        return {}
+    m = FRONTMATTER_RE.match(text)
+    if not m:
+        return {}
+    fm: dict[str, str] = {}
+    for line in m.group(1).split("\n"):
+        if ":" not in line or line.startswith(("  ", "\t", "-")):
+            continue
+        key, val = line.split(":", 1)
+        fm[key.strip()] = val.strip().strip("\"'")
+    return fm
+
+
+# ---------------------------------------------------------------------------
+# Variant generators (rule-based; LLM optional)
+# ---------------------------------------------------------------------------
+
+def variant_number_year(keyword: str, locale: str = "fr") -> str:
+    n = 7
+    if locale == "en":
+        return f"{n} Best {keyword.title()} for {CURRENT_YEAR} (Tested & Compared)"
+    if locale == "de":
+        return f"Die {n} besten {keyword} {CURRENT_YEAR} im Vergleich"
+    if locale == "es":
+        return f"Los {n} mejores {keyword} {CURRENT_YEAR} (probados y comparados)"
+    if locale == "it":
+        return f"I {n} migliori {keyword} {CURRENT_YEAR} a confronto"
+    return f"{n} meilleurs {keyword} {CURRENT_YEAR} (testés & comparés)"
+
+
+def variant_question(keyword: str, locale: str = "fr") -> str:
+    if locale == "en":
+        return f"Which {keyword} Is Worth It in {CURRENT_YEAR}? Honest Review"
+    if locale == "de":
+        return f"Welcher {keyword} lohnt sich {CURRENT_YEAR}? Ehrlicher Test"
+    if locale == "es":
+        return f"¿Cuál es el mejor {keyword} en {CURRENT_YEAR}? Análisis honesto"
+    if locale == "it":
+        return f"Qual è il miglior {keyword} nel {CURRENT_YEAR}? Recensione onesta"
+    return f"Quel {keyword} choisir en {CURRENT_YEAR} ? Avis honnête"
+
+
+def variant_power_word(keyword: str, locale: str = "fr") -> str:
+    if locale == "en":
+        return f"Ultimate {keyword.title()} Buyer's Guide ({CURRENT_YEAR}, Tested)"
+    if locale == "de":
+        return f"Der ultimative {keyword}-Kaufratgeber {CURRENT_YEAR}"
+    if locale == "es":
+        return f"Guía definitiva de {keyword} {CURRENT_YEAR} (probado)"
+    if locale == "it":
+        return f"La guida definitiva al {keyword} {CURRENT_YEAR} (testato)"
+    return f"Guide d'achat ultime {keyword} {CURRENT_YEAR} (testé)"
+
+
+def llm_variant(current_title: str, page_path: str, locale: str = "fr") -> Optional[str]:
+    """Generate one variant via Anthropic. Skipped silently when key missing."""
+    if not ANTHROPIC_API_KEY:
+        return None
+    try:
+        import urllib.request
+    except Exception:
+        return None
+    prompt = (
+        f"Rewrite this affiliation-site SEO title to maximise CTR while staying"
+        f" truthful and ≤60 characters. Reply with only the rewritten title.\n"
+        f"Current title: {current_title}\nURL: {page_path}\nLocale: {locale}\n"
+        f"Year: {CURRENT_YEAR}"
+    )
+    body = json.dumps({
+        "model": os.environ.get("CTR_LLM_MODEL", "claude-opus-4-5"),
+        "max_tokens": 100,
+        "messages": [{"role": "user", "content": prompt}],
+    }).encode("utf-8")
+    try:
+        req = urllib.request.Request(
+            "https://api.anthropic.com/v1/messages",
+            data=body,
+            headers={
+                "x-api-key": ANTHROPIC_API_KEY,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json",
+            },
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        blocks = data.get("content", [])
+        if blocks and isinstance(blocks, list):
+            text = blocks[0].get("text", "").strip().strip('"\'')
+            return text if text else None
+    except Exception as exc:
+        print(f"  ⚠️  LLM variant failed: {exc}")
+    return None
+
+
+def score_variant(variant: str, locale: str = "fr") -> float:
+    """0–10 heuristic score: length sweet spot, year, number, power word."""
+    if not variant:
+        return 0.0
+    score = 5.0
+    n = len(variant)
+    if 50 <= n <= 60:
+        score += 1.5
+    elif 45 <= n <= 65:
+        score += 0.5
+    elif n > 75 or n < 30:
+        score -= 1.5
+    if str(CURRENT_YEAR) in variant or str(CURRENT_YEAR + 1) in variant:
+        score += 1.0
+    if re.search(r"\b\d{1,2}\b", variant):
+        score += 1.0
+    pw = POWER_WORDS_EN if locale == "en" else POWER_WORDS_FR
+    if any(w in variant.lower() for w in pw):
+        score += 1.0
+    if "?" in variant or "(" in variant:
+        score += 0.5
+    return round(min(10.0, max(0.0, score)), 2)
+
+
+_FILLER_TOKENS = {
+    "meilleur", "meilleure", "meilleurs", "meilleures",
+    "best", "top", "the", "le", "la", "les", "un", "une", "vs",
+    "test", "comparatif", "guide", "avis",
+    str(CURRENT_YEAR), str(CURRENT_YEAR - 1), str(CURRENT_YEAR + 1),
+}
+
+
+def keyword_from_slug(slug: str) -> str:
+    if not slug:
+        return ""
+    parts = [p for p in slug.split("-") if p and p.lower() not in _FILLER_TOKENS]
+    return " ".join(parts[:5]).strip() or slug.replace("-", " ")
+
+
+def propose_variants(current_title: str, slug: str, page_path: str, locale: str = "fr") -> list[dict[str, Any]]:
+    keyword = keyword_from_slug(slug)
+    variants = [
+        {"name": "number_year", "title": variant_number_year(keyword, locale)},
+        {"name": "question",    "title": variant_question(keyword, locale)},
+        {"name": "power_word",  "title": variant_power_word(keyword, locale)},
+    ]
+    llm_v = llm_variant(current_title, page_path, locale)
+    if llm_v:
+        variants.append({"name": "llm", "title": llm_v})
+    for v in variants:
+        v["score"] = score_variant(v["title"], locale)
+        v["length"] = len(v["title"])
+    variants.sort(key=lambda v: -v["score"])
+    return variants
+
+
+# ---------------------------------------------------------------------------
+# Hermes events
+# ---------------------------------------------------------------------------
+
+def emit_event(event_type: str, payload: dict, priority: int = 3, target_agent: Optional[str] = None) -> dict:
+    event = {
+        "id": str(uuid.uuid4()),
+        "type": event_type,
+        "priority": priority,
+        "payload": payload,
+        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "source_agent": AGENT_NAME,
+        "routing_key": f"agent.{event_type.split('.')[0]}",
+    }
+    if target_agent:
+        event["target_agent"] = target_agent
+    fname = f"{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}_{event_type.replace('.', '_')}_{event['id'][:8]}.json"
+    (INBOX_DIR / fname).write_text(json.dumps(event, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"  📤 Emitted: {event_type} → {fname}")
+    return event
+
+
+# ---------------------------------------------------------------------------
+# Site driver
+# ---------------------------------------------------------------------------
+
+def _detect_locale_from_url(page_url: str, site_default: str = "fr") -> str:
+    """Walk the URL path looking for an explicit /xx/ locale prefix.
+
+    Important: only match locale prefixes that appear as path SEGMENTS
+    (between slashes) at the very start, never substrings inside slugs.
+    Otherwise URLs containing 'en' (e.g. /comparatif/aspirateur-balai-puissant)
+    get mis-classified as English."""
+    if not page_url:
+        return site_default
+    try:
+        from urllib.parse import urlparse
+        path = urlparse(page_url).path
+    except Exception:
+        path = page_url
+    parts = [p for p in path.lower().split("/") if p]
+    if parts and parts[0] in {"en", "de", "es", "it", "uk"}:
+        return parts[0]
+    return site_default
+
+
+def run_site(
+    site_slug: str,
+    min_impressions: int,
+    max_proposals: int,
+    dry_run: bool,
+) -> dict[str, Any]:
+    candidates = find_low_ctr_pages(site_slug, min_impressions=min_impressions, top_n=max_proposals * 2)
+    print(f"  → {site_slug}: {len(candidates)} low-CTR candidate(s)")
+    proposals: list[dict[str, Any]] = []
+    for c in candidates[:max_proposals]:
+        mdx = _find_mdx_for_url(site_slug, c["page_path"])
+        meta = _read_meta(mdx) if mdx else {}
+        current_title = meta.get("title", "") or _slug_from_url(c["page_path"]).replace("-", " ")
+        slug = _slug_from_url(c["page_path"])
+        site_default = SITES.get(site_slug, {}).get("default_locale", "fr")
+        locale = _detect_locale_from_url(c["page_path"], site_default=site_default)
+        variants = propose_variants(current_title, slug, c["page_path"], locale=locale)
+        current_score = score_variant(current_title, locale)
+        winner = next((v for v in variants if v["score"] > current_score + 0.5), None)
+        proposal = {
+            "site": site_slug,
+            "page_path": c["page_path"],
+            "slug": slug,
+            "locale": locale,
+            "mdx_path": str(mdx) if mdx else None,
+            "current_title": current_title,
+            "current_title_score": current_score,
+            "current_ctr": c["actual_ctr"],
+            "expected_ctr": c["expected_ctr"],
+            "position": c["position"],
+            "impressions": c["impressions"],
+            "opportunity_clicks": c["opportunity_clicks"],
+            "variants": variants,
+            "recommended": winner,
+        }
+        proposals.append(proposal)
+        if winner and not dry_run:
+            emit_event(
+                "cro.meta_variant_proposed",
+                {
+                    "site": site_slug,
+                    "page_path": c["page_path"],
+                    "mdx_path": str(mdx) if mdx else None,
+                    "current_title": current_title,
+                    "proposed_title": winner["title"],
+                    "variant_strategy": winner["name"],
+                    "score_uplift": round(winner["score"] - current_score, 2),
+                    "impressions": c["impressions"],
+                    "current_ctr": c["actual_ctr"],
+                    "expected_ctr": c["expected_ctr"],
+                    "opportunity_clicks": c["opportunity_clicks"],
+                    "all_variants": variants,
+                },
+                priority=3,
+                target_agent="agent-cro-optimizer",
+            )
+    return {"site": site_slug, "candidates": len(candidates), "proposals": proposals}
+
+
+def write_report(per_site: dict[str, dict[str, Any]], dry_run: bool) -> Path:
+    today = date.today().isoformat()
+    out = REPORTS_DIR / f"ctr-opportunities-{today}.md"
+    lines = [
+        f"# CTR optimization opportunities — {today}",
+        "",
+        f"_Generated by `{AGENT_NAME}`. {'DRY-RUN — no events emitted.' if dry_run else 'cro.meta_variant_proposed events queued for CRO Optimizer.'}_",
+        "",
+    ]
+    for site, data in per_site.items():
+        lines.append(f"## {site} — {len(data.get('proposals', []))} proposals")
+        lines.append("")
+        for p in data.get("proposals", []):
+            lines.append(f"### `{p['slug']}` [{p['locale']}] (position {p['position']}, {p['impressions']:,} impressions)")
+            lines.append(f"- URL: `{p['page_path']}`")
+            lines.append(f"- Current CTR: **{p['current_ctr']*100:.2f}%** vs expected **{p['expected_ctr']*100:.2f}%** "
+                         f"(opportunity: **+{p['opportunity_clicks']} clicks/period**)")
+            lines.append(f"- Current title: `{p['current_title']}` (score {p['current_title_score']})")
+            lines.append("- Variants:")
+            for v in p["variants"]:
+                marker = " ← **RECOMMENDED**" if p.get("recommended") and v["title"] == p["recommended"]["title"] else ""
+                lines.append(f"  - [{v['name']}, score {v['score']}, {v['length']} chars]{marker} `{v['title']}`")
+            lines.append("")
+    out.write_text("\n".join(lines), encoding="utf-8")
+    print(f"  ✅ Report saved: {out}")
+    return out
+
+
+def run_daily(
+    sites: Optional[list[str]] = None,
+    min_impressions: int = 200,
+    max_proposals: int = 10,
+    dry_run: bool = False,
+) -> dict[str, Any]:
+    sites = sites or list(SITES.keys())
+    per_site: dict[str, dict[str, Any]] = {}
+    total_proposals = 0
+    for s in sites:
+        result = run_site(s, min_impressions, max_proposals, dry_run)
+        per_site[s] = result
+        total_proposals += len(result.get("proposals", []))
+    out_path = write_report(per_site, dry_run)
+    if not dry_run:
+        emit_event(
+            "ctr_optimizer.run_completed",
+            {
+                "report_path": str(out_path),
+                "sites": sites,
+                "proposals": total_proposals,
+            },
+            priority=4,
+            target_agent="agent-analytics",
+        )
+    return {"per_site": per_site, "report_path": str(out_path)}
+
+
+# ---------------------------------------------------------------------------
+# Consumer
+# ---------------------------------------------------------------------------
+
+CONSUMED_TYPES = {"ctr_optimizer.run_requested", "analytics.weekly_report"}
+
+
+def _read_event(path: Path) -> Optional[dict]:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+
+def _move(src: Path, dst_dir: Path) -> Optional[Path]:
+    dst = dst_dir / src.name
+    try:
+        shutil.move(str(src), str(dst))
+        return dst
+    except Exception:
+        return None
+
+
+def consume(limit: int = 10, dry_run: bool = False) -> int:
+    handled = 0
+    for path in sorted(INBOX_DIR.glob("*.json")):
+        if handled >= limit:
+            break
+        event = _read_event(path)
+        if not event:
+            continue
+        target = event.get("target_agent")
+        if target and target != AGENT_NAME:
+            continue
+        if not target and event.get("type") not in CONSUMED_TYPES:
+            continue
+        proc = _move(path, PROCESSING_DIR) if not dry_run else path
+        if not proc:
+            continue
+        try:
+            run_daily(dry_run=dry_run)
+            if not dry_run:
+                _move(proc, COMPLETED_DIR)
+        except Exception as exc:
+            print(f"  ❌ {AGENT_NAME} failed on {path.name}: {exc}")
+            if not dry_run:
+                _move(proc, FAILED_DIR)
+        handled += 1
+    print(f"[SUMMARY] {AGENT_NAME} handled {handled} event(s).")
+    return handled
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=AGENT_NAME)
+    parser.add_argument("--consume", action="store_true")
+    parser.add_argument("--limit", type=int, default=10)
+    parser.add_argument("--daily", action="store_true")
+    parser.add_argument("--site", type=str)
+    parser.add_argument("--min-impressions", type=int, default=200)
+    parser.add_argument("--max", type=int, default=10)
+    parser.add_argument("--dry-run", action="store_true")
+    args = parser.parse_args()
+    if args.consume:
+        consume(limit=args.limit, dry_run=args.dry_run)
+        return 0
+    sites = [args.site] if args.site else None
+    if args.daily or args.site:
+        run_daily(sites=sites, min_impressions=args.min_impressions, max_proposals=args.max, dry_run=args.dry_run)
+        return 0
+    parser.print_help()
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

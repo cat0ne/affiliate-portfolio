@@ -94,7 +94,13 @@ SITE_REPOS = {
 }
 
 # Supported event types
-SUPPORTED_TYPES = {"content.written", "price.asin_replaced"}
+SUPPORTED_TYPES = {
+    "content.written",
+    "price.asin_replaced",
+    "seo.fix_applied",
+    "seo.recrawl_requested",
+    "deployment.rollback_requested",
+}
 
 # ── Hermes Event Helpers ─────────────────────────────────────────────────────
 
@@ -497,6 +503,120 @@ def resolve_site_from_event(event: dict[str, Any]) -> dict | None:
     return None
 
 
+def bump_parent_submodule_pointer(submodule_dir: Path, dry_run: bool = False) -> dict[str, Any]:
+    """After a submodule's PR is merged on origin/main, fast-forward the
+    submodule working tree to that SHA and commit/push the parent monorepo's
+    pointer bump (P1-12 fix).
+
+    Safe behaviours:
+      * NEVER stash other parent-repo changes — only stages the submodule path.
+      * Skips silently when the parent repo is not a git repo (legacy layout).
+      * Skips when the submodule pointer already matches origin/main.
+      * Best-effort push: failures are reported but don't crash the publisher.
+    """
+    parent = BASE_DIR
+    submodule_name = submodule_dir.name
+    if dry_run:
+        return {"status": "skipped", "reason": "dry_run", "submodule": submodule_name}
+
+    try:
+        # Confirm parent is a git repo and submodule is registered.
+        parent_check = subprocess.run(
+            ["git", "-C", str(parent), "rev-parse", "--is-inside-work-tree"],
+            capture_output=True, text=True,
+        )
+        if parent_check.returncode != 0 or parent_check.stdout.strip() != "true":
+            return {"status": "skipped", "reason": "parent_not_git_repo", "submodule": submodule_name}
+
+        listed = subprocess.run(
+            ["git", "-C", str(parent), "submodule", "status", submodule_name],
+            capture_output=True, text=True,
+        )
+        if listed.returncode != 0 or not listed.stdout.strip():
+            return {"status": "skipped", "reason": "not_a_submodule", "submodule": submodule_name}
+
+        # Pull main inside the submodule (already merged origin/main).
+        subprocess.run(
+            ["git", "-C", str(submodule_dir), "fetch", "origin", "main"],
+            check=True, capture_output=True, text=True,
+        )
+        subprocess.run(
+            ["git", "-C", str(submodule_dir), "checkout", "main"],
+            check=True, capture_output=True, text=True,
+        )
+        pull = subprocess.run(
+            ["git", "-C", str(submodule_dir), "pull", "--ff-only", "origin", "main"],
+            capture_output=True, text=True,
+        )
+        if pull.returncode != 0:
+            return {
+                "status": "failed", "reason": "submodule_pull_failed",
+                "submodule": submodule_name, "stderr": pull.stderr.strip()[:300],
+            }
+
+        new_sha = subprocess.run(
+            ["git", "-C", str(submodule_dir), "rev-parse", "HEAD"],
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+
+        # Stage *only* the submodule path — never touch other parent-repo changes.
+        add = subprocess.run(
+            ["git", "-C", str(parent), "add", submodule_name],
+            capture_output=True, text=True,
+        )
+        if add.returncode != 0:
+            return {
+                "status": "failed", "reason": "git_add_failed",
+                "submodule": submodule_name, "stderr": add.stderr.strip()[:300],
+            }
+
+        # Detect "nothing to commit" by checking the staged diff for this path.
+        diff_check = subprocess.run(
+            ["git", "-C", str(parent), "diff", "--cached", "--quiet", "--", submodule_name],
+            capture_output=True, text=True,
+        )
+        if diff_check.returncode == 0:
+            return {"status": "noop", "reason": "pointer_unchanged", "submodule": submodule_name, "sha": new_sha}
+
+        commit_msg = (
+            f"chore(submodules): bump {submodule_name} to {new_sha[:8]} "
+            f"(auto by agent-publisher)"
+        )
+        commit = subprocess.run(
+            ["git", "-C", str(parent), "commit", "-m", commit_msg, "--only", submodule_name],
+            capture_output=True, text=True,
+        )
+        if commit.returncode != 0:
+            # Reset the staged path so we don't poison subsequent commits.
+            subprocess.run(
+                ["git", "-C", str(parent), "reset", "HEAD", "--", submodule_name],
+                capture_output=True, text=True,
+            )
+            return {
+                "status": "failed", "reason": "commit_failed",
+                "submodule": submodule_name, "stderr": commit.stderr.strip()[:300],
+            }
+
+        push = subprocess.run(
+            ["git", "-C", str(parent), "push", "origin", "HEAD:main"],
+            capture_output=True, text=True,
+        )
+        if push.returncode != 0:
+            return {
+                "status": "committed_not_pushed", "submodule": submodule_name,
+                "sha": new_sha, "stderr": push.stderr.strip()[:300],
+            }
+        return {"status": "ok", "submodule": submodule_name, "sha": new_sha}
+    except subprocess.CalledProcessError as exc:
+        return {
+            "status": "failed", "reason": "subprocess_error",
+            "submodule": submodule_name,
+            "stderr": (exc.stderr or "").strip()[:300] if hasattr(exc, "stderr") else str(exc)[:300],
+        }
+    except Exception as exc:
+        return {"status": "failed", "reason": "unexpected", "submodule": submodule_name, "error": str(exc)[:300]}
+
+
 def make_branch_name(event: dict[str, Any]) -> str:
     """Generate a branch name like hermes/<timestamp>-<article-slug>."""
     payload = event.get("payload", {})
@@ -543,11 +663,110 @@ def make_pr_body(event: dict[str, Any], files: list[str]) -> str:
     return "\n".join(lines)
 
 
+def process_rollback_request(event: dict[str, Any], dry_run: bool = False) -> bool:
+    """Handle deployment.rollback_requested events from agent-canary.
+
+    Strategy: identify the most recent commit on the affected submodule
+    that touched any of the offending files, create a `git revert` PR
+    on that submodule, and leave it OPEN for human review (no auto-merge
+    on rollbacks — the canary signal could be noisy).
+    """
+    event_id = event.get("id", "no-id")
+    payload = event.get("payload", {}) or {}
+    site = payload.get("site")
+    files: list[str] = payload.get("files") or []
+    site_info = SITE_REPOS.get(site)
+    if not site_info:
+        print(f"[ERROR] Rollback: unknown site '{site}'.")
+        return False
+    repo_dir = site_info["dir"]
+    if not files:
+        print(f"[WARN] Rollback: no files in payload for {event_id}.")
+        return False
+    print(f"\n▶ Rollback request {event_id} for {site} (drop {payload.get('click_drop_pct','?')}%)")
+
+    if dry_run:
+        print(f"  [DRY-RUN] Would identify the bad commit on {repo_dir.name} touching {files} and open a revert PR.")
+        return True
+
+    try:
+        git_ensure_clean_main(repo_dir, dry_run=False)
+    except subprocess.CalledProcessError as exc:
+        print(f"[ERROR] Could not prepare {repo_dir.name} for rollback: {exc.stderr}")
+        return False
+
+    file_args = [f for f in files if f]
+    log = subprocess.run(
+        ["git", "-C", str(repo_dir), "log", "-n", "1", "--format=%H", "--", *file_args],
+        capture_output=True, text=True,
+    )
+    bad_sha = log.stdout.strip()
+    if not bad_sha:
+        print(f"[WARN] Rollback: no commit found touching {file_args}; skipping.")
+        return False
+
+    branch = f"hermes/rollback-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}-{bad_sha[:8]}"
+    try:
+        git_create_branch(repo_dir, branch, dry_run=False)
+    except subprocess.CalledProcessError as exc:
+        print(f"[ERROR] Could not create rollback branch: {exc.stderr}")
+        return False
+
+    revert = subprocess.run(
+        ["git", "-C", str(repo_dir), "revert", "--no-edit", bad_sha],
+        capture_output=True, text=True,
+    )
+    if revert.returncode != 0:
+        print(f"[ERROR] git revert failed (likely conflicts): {revert.stderr.strip()[:300]}")
+        subprocess.run(["git", "-C", str(repo_dir), "revert", "--abort"], capture_output=True, text=True)
+        return False
+
+    push = subprocess.run(
+        ["git", "-C", str(repo_dir), "push", "-u", "origin", branch],
+        capture_output=True, text=True,
+    )
+    if push.returncode != 0:
+        print(f"[ERROR] Push failed for rollback branch: {push.stderr.strip()[:300]}")
+        return False
+
+    pr_body = (
+        f"Auto-rollback proposed by `agent-canary`.\n\n"
+        f"- Site: {site}\n"
+        f"- Bad commit: {bad_sha}\n"
+        f"- Click drop: {payload.get('click_drop_pct','?')}%\n"
+        f"- Impression drop: {payload.get('impression_drop_pct','?')}%\n"
+        f"- Baseline clicks (7d): {payload.get('baseline_clicks_7d','?')}\n"
+        f"- Current clicks (7d): {payload.get('current_clicks_7d','?')}\n"
+        f"- Affected URLs: {', '.join(payload.get('affected_urls', [])[:5])}\n\n"
+        f"**Manual review required — do not auto-merge.**"
+    )
+    pr_create = subprocess.run(
+        ["gh", "pr", "create", "--title", f"rollback: {bad_sha[:8]} (canary regression)",
+         "--body", pr_body, "--base", "main", "--head", branch],
+        cwd=str(repo_dir), capture_output=True, text=True,
+    )
+    if pr_create.returncode != 0:
+        print(f"[ERROR] gh pr create failed: {pr_create.stderr.strip()[:300]}")
+        return False
+    pr_url = pr_create.stdout.strip().split("\n")[-1]
+    print(f"  ✅ Rollback PR opened: {pr_url}")
+    emit_event(
+        "deployment.rollback_proposed",
+        {"site": site, "bad_sha": bad_sha, "pr_url": pr_url, "canary_payload": payload},
+        priority=1, source="agent-publisher",
+    )
+    git_ensure_clean_main(repo_dir, dry_run=False)
+    return True
+
+
 def process_event(event: dict[str, Any], dry_run: bool = False, auto_merge: bool = True) -> bool:
     """Process a single event end-to-end. Returns True on success."""
     event_id = event.get("id", "no-id")
     event_type = event.get("type", "unknown")
     print(f"\n▶ Processing event {event_id} ({event_type})")
+
+    if event_type == "deployment.rollback_requested":
+        return process_rollback_request(event, dry_run=dry_run)
 
     # 1. Resolve site/repo
     site_info = resolve_site_from_event(event)
@@ -733,6 +952,14 @@ def process_event(event: dict[str, Any], dry_run: bool = False, auto_merge: bool
         if canonical_urls:
             indexnow_result = ping_indexnow(site_key, canonical_urls, dry_run=dry_run)
 
+    # 9b. Bump the parent monorepo submodule pointer so the deployed SHA is
+    # recorded in `affiliation-sites` itself (P1-12 fix). Without this, the
+    # parent repo's submodule pointer drifts forever and `git status` from the
+    # parent always shows "modified content".
+    submodule_bump: dict[str, Any] = {"status": "skipped", "reason": "not merged"}
+    if merged:
+        submodule_bump = bump_parent_submodule_pointer(repo_dir, dry_run=dry_run)
+
     # 10. Emit deployment.completed event
     deploy_payload = {
         "original_event_id": event_id,
@@ -744,6 +971,7 @@ def process_event(event: dict[str, Any], dry_run: bool = False, auto_merge: bool
         "merged": merged,
         "files": changed_files,
         "indexnow": indexnow_result,
+        "submodule_bump": submodule_bump,
     }
     emit_event("deployment.completed", deploy_payload, priority=2, source="agent-publisher")
 
