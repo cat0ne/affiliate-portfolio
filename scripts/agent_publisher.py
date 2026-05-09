@@ -640,6 +640,10 @@ def make_commit_message(event: dict[str, Any], files: list[str]) -> str:
         old_asin = payload.get("old_asin", "?")
         new_asin = payload.get("new_asin", "?")
         return f"price: replace ASIN {old_asin} -> {new_asin}"
+    elif event_type == "seo.fix_applied":
+        ft = payload.get("fix_type", "seo")
+        shown = ", ".join(files[:3]) + ("…" if len(files) > 3 else "")
+        return f"seo: {ft} ({shown})"
     else:
         return f"hermes: apply {event_type} for {slug}"
 
@@ -759,6 +763,156 @@ def process_rollback_request(event: dict[str, Any], dry_run: bool = False) -> bo
     return True
 
 
+def collect_repo_relative_paths(repo_dir: Path, changed_files: list[str]) -> list[str]:
+    """Normalize paths to be relative to repo_dir (same rules as process_event)."""
+    repo_relative_files: list[str] = []
+    for f in changed_files:
+        if not f:
+            continue
+        p = Path(f)
+        if p.is_absolute():
+            try:
+                repo_relative_files.append(str(p.relative_to(repo_dir)))
+            except ValueError:
+                print(f"[WARN] File {f} is not under repo {repo_dir}, skipping")
+        else:
+            resolved = BASE_DIR / f
+            if resolved.exists():
+                try:
+                    repo_relative_files.append(str(resolved.relative_to(repo_dir)))
+                except ValueError:
+                    repo_relative_files.append(str(f))
+            else:
+                alt = repo_dir / f
+                if alt.exists():
+                    repo_relative_files.append(str(f))
+                else:
+                    repo_relative_files.append(str(f))
+    return repo_relative_files
+
+
+def process_pr_from_existing_branch(
+    event: dict[str, Any],
+    repo_dir: Path,
+    branch: str,
+    changed_files: list[str],
+    dry_run: bool = False,
+    auto_merge: bool = True,
+) -> bool:
+    """Push a branch another agent already committed to, open PR, merge, IndexNow.
+
+    Used by agent-translator (`use_existing_branch`) and for any agent that
+    prepares work locally then hands off to the publisher.
+    """
+    event_id = event.get("id", "no-id")
+    event_type = event.get("type", "unknown")
+    payload = event.get("payload", {})
+
+    print(f"  Existing-branch workflow: `{branch}` (files for IndexNow: {changed_files})")
+
+    if dry_run:
+        print(f"  [DRY-RUN] Would checkout {branch}, push, open PR, poll CI")
+        return True
+
+    try:
+        run_git(["fetch", "origin"], cwd=repo_dir, dry_run=False, check=False)
+    except subprocess.CalledProcessError:
+        pass
+
+    co = run_git(["checkout", branch], cwd=repo_dir, check=False)
+    if co.returncode != 0:
+        co2 = run_git(["checkout", "-B", branch, f"origin/{branch}"], cwd=repo_dir, check=False)
+        if co2.returncode != 0:
+            print(f"[ERROR] Cannot checkout branch {branch}.\n{co.stderr}\n{co2.stderr}")
+            try:
+                git_ensure_clean_main(repo_dir, dry_run=False)
+            except Exception:
+                pass
+            return False
+
+    try:
+        git_push_branch(repo_dir, branch, dry_run=False)
+    except subprocess.CalledProcessError as exc:
+        print(f"[ERROR] Push failed for {branch}: {exc.stderr}")
+        try:
+            git_ensure_clean_main(repo_dir, dry_run=False)
+        except Exception:
+            pass
+        return False
+
+    pr_title = (payload.get("summary") or make_commit_message(event, changed_files))[:120]
+    pr_body = make_pr_body(event, changed_files)
+    try:
+        pr_url = gh_pr_create(repo_dir, title=pr_title, body=pr_body, dry_run=False)
+        if pr_url:
+            print(f"  PR opened: {pr_url}")
+        else:
+            print(f"[WARN] PR created but URL not parsed.")
+    except subprocess.CalledProcessError as exc:
+        print(f"[ERROR] PR creation failed: {exc.stderr}")
+        try:
+            git_ensure_clean_main(repo_dir, dry_run=False)
+        except Exception:
+            pass
+        return False
+
+    print(f"  Monitoring CI checks...")
+    checks = gh_pr_checks_wait(repo_dir, branch, dry_run=False)
+    conclusion = checks.get("conclusion", "unknown")
+    print(f"  Checks conclusion: {conclusion}")
+
+    if conclusion == "success":
+        if auto_merge and payload.get("auto_merge", True):
+            print(f"  Auto-merging PR...")
+            merged = gh_pr_merge(repo_dir, branch, dry_run=False)
+            if merged:
+                print(f"  Merged and deployed (git push triggers build).")
+            else:
+                print(f"[WARN] Merge failed; PR remains open for manual review.")
+        else:
+            print(f"  Auto-merge disabled; PR remains open.")
+    elif conclusion == "failure":
+        print(f"[WARN] Checks failed for PR. Leaving open for manual review.")
+    elif conclusion == "timeout":
+        print(f"[WARN] CI check polling timed out. Leaving PR open.")
+    else:
+        print(f"[INFO] CI status: {conclusion}. Leaving PR open.")
+
+    merged = conclusion == "success" and auto_merge and payload.get("auto_merge", True)
+    indexnow_result: dict[str, Any] = {"status": "skipped", "reason": "not merged"}
+    if merged:
+        site_key = repo_dir.name
+        canonical_urls = slugs_to_canonical_urls(site_key, changed_files)
+        if canonical_urls:
+            indexnow_result = ping_indexnow(site_key, canonical_urls, dry_run=False)
+
+    submodule_bump: dict[str, Any] = {"status": "skipped", "reason": "not merged"}
+    if merged:
+        submodule_bump = bump_parent_submodule_pointer(repo_dir, dry_run=False)
+
+    deploy_payload = {
+        "original_event_id": event_id,
+        "original_event_type": event_type,
+        "site": repo_dir.name,
+        "branch": branch,
+        "pr_url": pr_url,
+        "checks_conclusion": conclusion,
+        "merged": merged,
+        "files": changed_files,
+        "indexnow": indexnow_result,
+        "submodule_bump": submodule_bump,
+        "workflow": "existing_branch",
+    }
+    emit_event("deployment.completed", deploy_payload, priority=2, source="agent-publisher")
+
+    try:
+        git_ensure_clean_main(repo_dir, dry_run=False)
+    except subprocess.CalledProcessError as exc:
+        print(f"[WARN] Failed to return to main after processing: {exc.stderr}")
+
+    return True
+
+
 def process_event(event: dict[str, Any], dry_run: bool = False, auto_merge: bool = True) -> bool:
     """Process a single event end-to-end. Returns True on success."""
     event_id = event.get("id", "no-id")
@@ -776,6 +930,29 @@ def process_event(event: dict[str, Any], dry_run: bool = False, auto_merge: bool
 
     repo_dir = site_info["dir"]
     print(f"  Repo: {repo_dir.name} ({site_info['remote']})")
+
+    payload = event.get("payload", {})
+    # Branch prepared by another agent (e.g. translator) — push, open PR, merge.
+    if event_type == "seo.fix_applied" and payload.get("use_existing_branch"):
+        br = (payload.get("branch") or payload.get("branch_name") or "").strip()
+        raw_files: list[str] = []
+        fp = payload.get("files")
+        if isinstance(fp, list):
+            raw_files = [str(x) for x in fp if x]
+        elif isinstance(fp, str) and fp:
+            raw_files = [fp]
+        elif isinstance(fp, dict):
+            raw_files = list(fp.keys())
+        changed_norm = collect_repo_relative_paths(repo_dir, raw_files)
+        if not br:
+            print(f"[ERROR] use_existing_branch set but payload.branch is empty for {event_id}.")
+            return False
+        if not changed_norm:
+            print(f"[ERROR] use_existing_branch requires resolvable files; got {raw_files!r}.")
+            return False
+        return process_pr_from_existing_branch(
+            event, repo_dir, br, changed_norm, dry_run=dry_run, auto_merge=auto_merge
+        )
 
     # 2. Ensure clean main
     try:

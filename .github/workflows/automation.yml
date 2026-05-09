@@ -122,6 +122,18 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python scripts/agent_ctr_optimizer.py --daily --max 10 --min-impressions 200
 
+      - name: Run CRO optimizer consumer (apply CTR meta + ASIN events)
+        continue-on-error: true
+        env:
+          APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
+        run: python scripts/agent_cro_optimizer.py --consume --limit 20
+
+      - name: Run Hermes publisher (open PRs for seo.fix_applied, etc.)
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/agent_publisher.py --consume --limit 5 --no-auto-merge
+
       - name: Run canary check (rollback if traffic regresses)
         continue-on-error: true
         run: |
