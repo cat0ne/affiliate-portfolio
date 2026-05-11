@@ -261,7 +261,27 @@ def _slug_from_url(url: str) -> str:
     return path.split("/")[-1] if path else ""
 
 
+LOCALE_DIR_NAMES = {"en", "de", "es", "it", "uk"}
+
+
 def _find_mdx_for_url(site_slug: str, page_url: str) -> Optional[Path]:
+    """Locate the MDX file backing a URL across both content-dir layouts.
+
+    Site conventions vary:
+      - matelas / bureau / cafe:        content/ (default) + content-<loc>/
+      - aspirateur (mixed):             content/ + content-en/ + content/es/
+      - pixinstant:                     content/ (default) + content/<loc>/
+
+    Algorithm:
+      1. Detect locale from URL.
+      2. Default locale → search content/**/<slug>.mdx EXCLUDING locale-named
+         subdirs (so /test/ on a FR site doesn't pick up content/en/...).
+      3. Non-default locale → search content-<loc>/** and content/<loc>/**.
+      4. Tiebreaker: prefer a match whose directory name matches the URL's
+         content-type segment ('test', 'avis', 'comparatif', 'guide'). The
+         URL segment can diverge from the on-disk dir (e.g. /en/avis/<slug>
+         lives in content-en/tests/), so this is a soft preference only.
+    """
     slug = _slug_from_url(page_url)
     if not slug:
         return None
@@ -269,9 +289,44 @@ def _find_mdx_for_url(site_slug: str, page_url: str) -> Optional[Path]:
     if not site:
         return None
     repo = BASE_DIR / site_slug
-    for mdx in repo.rglob(f"content/**/{slug}.mdx"):
-        return mdx
-    return None
+    site_default = site.get("default_locale", "fr")
+    locale = _detect_locale_from_url(page_url, site_default=site_default)
+
+    candidates: list[Path] = []
+    if locale == site_default:
+        # Default-locale: content/**/<slug>.mdx but skip content/<locale>/ subtrees.
+        for mdx in repo.glob(f"content/**/{slug}.mdx"):
+            try:
+                rel = mdx.relative_to(repo / "content").parts
+            except ValueError:
+                continue
+            if rel and rel[0] in LOCALE_DIR_NAMES:
+                continue  # nested locale subdir on a default-locale URL → skip
+            candidates.append(mdx)
+    else:
+        # Parallel layout: content-<loc>/
+        candidates.extend(repo.glob(f"content-{locale}/**/{slug}.mdx"))
+        # Nested layout: content/<loc>/
+        candidates.extend(repo.glob(f"content/{locale}/**/{slug}.mdx"))
+
+    if not candidates:
+        return None
+    if len(candidates) == 1:
+        return candidates[0]
+
+    # Soft tiebreaker: URL content-type segment match.
+    path_segments = [p for p in page_url.lower().split("/") if p]
+    url_type = next(
+        (s for s in path_segments if s in {"test", "avis", "comparatif", "comparativo", "guide", "blog"}),
+        None,
+    )
+    if url_type:
+        # Match on directory name (allow plural: 'tests/', 'comparatifs/').
+        for c in candidates:
+            parts = [p.lower() for p in c.parts]
+            if any(p == url_type or p.rstrip("s") == url_type for p in parts):
+                return c
+    return candidates[0]
 
 
 def _read_meta(mdx_path: Path) -> dict[str, str]:
