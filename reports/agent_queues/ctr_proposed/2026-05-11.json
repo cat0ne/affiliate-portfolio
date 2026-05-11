@@ -1,0 +1,981 @@
+{
+  "generated_at": "2026-05-11T13:35:54.672897Z",
+  "agent": "agent-ctr-optimizer",
+  "sites": {
+    "aspirateur": [
+      {
+        "site": "aspirateur",
+        "page_path": "https://www.top-aspirateur.fr/en/test/test-dyson-v15-detect/",
+        "slug": "test-dyson-v15-detect",
+        "locale": "en",
+        "content_type": "test",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/aspirateur/content-en/tests/test-dyson-v15-detect.mdx",
+        "current_title": "Dyson V15 Detect Review 2026: Laser Tested 25h — Worth €649?",
+        "current_title_score": 9.0,
+        "current_ctr": 0.002,
+        "expected_ctr": 0.022,
+        "position": 8.5,
+        "impressions": 987,
+        "opportunity_clicks": 19,
+        "variants": [
+          {
+            "name": "question",
+            "title": "Which dyson v15 detect Is Worth It in 2026? Honest Review",
+            "score": 9.0,
+            "length": 57
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Dyson V15 Detect Buyer's Guide (2026, Tested)",
+            "score": 9.0,
+            "length": 54
+          },
+          {
+            "name": "llm",
+            "title": "Dyson V15 Detect Review: 25h Test — Is It Worth €649? (2026)",
+            "score": 8.0,
+            "length": 60
+          }
+        ],
+        "recommended": null
+      },
+      {
+        "site": "aspirateur",
+        "page_path": "https://www.top-aspirateur.fr/en/test/test-dreame-l10s-ultra/",
+        "slug": "test-dreame-l10s-ultra",
+        "locale": "en",
+        "content_type": "test",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/aspirateur/content-en/tests/test-dreame-l10s-ultra.mdx",
+        "current_title": "Dreame L10s Ultra Review 2026: €300 Cheaper Than Roborock? Our Test",
+        "current_title_score": 6.5,
+        "current_ctr": 0.0029,
+        "expected_ctr": 0.028,
+        "position": 7.8,
+        "impressions": 340,
+        "opportunity_clicks": 8,
+        "variants": [
+          {
+            "name": "question",
+            "title": "Which dreame l10s ultra Is Worth It in 2026? Honest Review",
+            "score": 9.0,
+            "length": 58
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Dreame L10S Ultra Buyer's Guide (2026, Tested)",
+            "score": 9.0,
+            "length": 55
+          },
+          {
+            "name": "llm",
+            "title": "Dreame L10s Ultra Review 2026: Tested vs Roborock (Save €300)",
+            "score": 8.0,
+            "length": 61
+          }
+        ],
+        "recommended": {
+          "name": "question",
+          "title": "Which dreame l10s ultra Is Worth It in 2026? Honest Review",
+          "score": 9.0,
+          "length": 58
+        }
+      }
+    ],
+    "bureau": [
+      {
+        "site": "bureau",
+        "page_path": "https://www.bureau-expert.fr/en/comparatif/meilleure-chaise-ergonomique-moins-300-euros/",
+        "slug": "meilleure-chaise-ergonomique-moins-300-euros",
+        "locale": "en",
+        "content_type": "comparatif",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-en/comparatifs/meilleure-chaise-ergonomique-moins-300-euros.mdx",
+        "current_title": "Ergonomic Chair Under €300 [2026]: Top 5 Tested | Bureau Expert",
+        "current_title_score": 8.5,
+        "current_ctr": 0.0129,
+        "expected_ctr": 0.035,
+        "position": 7.0,
+        "impressions": 309,
+        "opportunity_clicks": 6,
+        "variants": [
+          {
+            "name": "llm",
+            "title": "Best Ergonomic Chairs Under €300 (2026) – We Tested 5 Models",
+            "score": 10.0,
+            "length": 60
+          },
+          {
+            "name": "number_year",
+            "title": "7 Best Chaise Ergonomique Moins 300 Euros for 2026 (Tested & Compared)",
+            "score": 8.5,
+            "length": 70
+          },
+          {
+            "name": "question",
+            "title": "Which chaise ergonomique moins 300 euros Is Worth It in 2026? Honest Review",
+            "score": 7.5,
+            "length": 75
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Chaise Ergonomique Moins 300 Euros Buyer's Guide (2026, Tested)",
+            "score": 7.5,
+            "length": 72
+          }
+        ],
+        "recommended": {
+          "name": "llm",
+          "title": "Best Ergonomic Chairs Under €300 (2026) – We Tested 5 Models",
+          "score": 10.0,
+          "length": 60
+        }
+      }
+    ],
+    "matelas": [
+      {
+        "site": "matelas",
+        "page_path": "https://www.matelas-expert.fr/en/",
+        "slug": "en",
+        "locale": "en",
+        "content_type": "",
+        "mdx_path": null,
+        "current_title": "en",
+        "current_title_score": 3.5,
+        "current_ctr": 0.0046,
+        "expected_ctr": 0.035,
+        "position": 7.0,
+        "impressions": 1530,
+        "opportunity_clicks": 46,
+        "variants": [
+          {
+            "name": "number_year",
+            "title": "7 Best En for 2026 (Tested & Compared)",
+            "score": 8.5,
+            "length": 38
+          },
+          {
+            "name": "llm",
+            "title": "Best Mattresses 2026 – Expert Reviews & Buying Guide",
+            "score": 8.5,
+            "length": 52
+          },
+          {
+            "name": "question",
+            "title": "Which en Is Worth It in 2026? Honest Review",
+            "score": 7.5,
+            "length": 43
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate En Buyer's Guide (2026, Tested)",
+            "score": 7.5,
+            "length": 40
+          }
+        ],
+        "recommended": {
+          "name": "number_year",
+          "title": "7 Best En for 2026 (Tested & Compared)",
+          "score": 8.5,
+          "length": 38
+        }
+      },
+      {
+        "site": "matelas",
+        "page_path": "https://www.matelas-expert.fr/en/test/test-morphea-jade/",
+        "slug": "test-morphea-jade",
+        "locale": "en",
+        "content_type": "test",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-en/tests/test-morphea-jade.mdx",
+        "current_title": "Morphea Jade Test 2026: 100 Nights | French Craftsmanship Worth €899?",
+        "current_title_score": 6.5,
+        "current_ctr": 0.0034,
+        "expected_ctr": 0.08,
+        "position": 4.2,
+        "impressions": 586,
+        "opportunity_clicks": 44,
+        "variants": [
+          {
+            "name": "question",
+            "title": "Which morphea jade Is Worth It in 2026? Honest Review",
+            "score": 9.0,
+            "length": 53
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Morphea Jade Buyer's Guide (2026, Tested)",
+            "score": 9.0,
+            "length": 50
+          },
+          {
+            "name": "llm",
+            "title": "Morphea Jade Mattress Review 2026: Worth €899? We Tested It",
+            "score": 9.0,
+            "length": 59
+          }
+        ],
+        "recommended": {
+          "name": "question",
+          "title": "Which morphea jade Is Worth It in 2026? Honest Review",
+          "score": 9.0,
+          "length": 53
+        }
+      },
+      {
+        "site": "matelas",
+        "page_path": "https://www.matelas-expert.fr/en/test/test-epeda-echappee/",
+        "slug": "test-epeda-echappee",
+        "locale": "en",
+        "content_type": "test",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-en/tests/test-epeda-echappee.mdx",
+        "current_title": "Épéda L'Échappée Test 2026: 100 Nights | What Reviews Don't Say",
+        "current_title_score": 6.5,
+        "current_ctr": 0.0085,
+        "expected_ctr": 0.08,
+        "position": 3.9,
+        "impressions": 236,
+        "opportunity_clicks": 16,
+        "variants": [
+          {
+            "name": "question",
+            "title": "Which epeda echappee Is Worth It in 2026? Honest Review",
+            "score": 9.0,
+            "length": 55
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Epeda Echappee Buyer's Guide (2026, Tested)",
+            "score": 9.0,
+            "length": 52
+          },
+          {
+            "name": "llm",
+            "title": "Épéda L'Échappée Review 2026: Honest Test After 100 Nights",
+            "score": 8.5,
+            "length": 58
+          }
+        ],
+        "recommended": {
+          "name": "question",
+          "title": "Which epeda echappee Is Worth It in 2026? Honest Review",
+          "score": 9.0,
+          "length": 55
+        }
+      },
+      {
+        "site": "matelas",
+        "page_path": "https://www.matelas-expert.fr/en/test/test-emma-original/",
+        "slug": "test-emma-original",
+        "locale": "en",
+        "content_type": "test",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-en/tests/test-emma-original.mdx",
+        "current_title": "Emma Original Review 2026: 100-Night Test | 3 Flaws Sellers Hide",
+        "current_title_score": 7.5,
+        "current_ctr": 0.0,
+        "expected_ctr": 0.028,
+        "position": 7.7,
+        "impressions": 510,
+        "opportunity_clicks": 14,
+        "variants": [
+          {
+            "name": "question",
+            "title": "Which emma original Is Worth It in 2026? Honest Review",
+            "score": 9.0,
+            "length": 54
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Emma Original Buyer's Guide (2026, Tested)",
+            "score": 9.0,
+            "length": 51
+          },
+          {
+            "name": "llm",
+            "title": "Emma Original Review 2026: 100-Night Test Reveals 3 Hidden Flaws",
+            "score": 7.5,
+            "length": 64
+          }
+        ],
+        "recommended": {
+          "name": "question",
+          "title": "Which emma original Is Worth It in 2026? Honest Review",
+          "score": 9.0,
+          "length": 54
+        }
+      },
+      {
+        "site": "matelas",
+        "page_path": "https://www.matelas-expert.fr/en/comparatif/meilleurs-matelas-memoire-de-forme-2026/",
+        "slug": "meilleurs-matelas-memoire-de-forme-2026",
+        "locale": "en",
+        "content_type": "comparatif",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-en/comparatifs/meilleurs-matelas-memoire-de-forme-2026.mdx",
+        "current_title": "Best Memory Foam Mattresses 2026: 7 Tested | Our #1 for Hot Sleepers",
+        "current_title_score": 8.0,
+        "current_ctr": 0.0,
+        "expected_ctr": 0.035,
+        "position": 7.1,
+        "impressions": 336,
+        "opportunity_clicks": 11,
+        "variants": [
+          {
+            "name": "number_year",
+            "title": "7 Best Matelas Memoire De Forme for 2026 (Tested & Compared)",
+            "score": 10.0,
+            "length": 60
+          },
+          {
+            "name": "llm",
+            "title": "Best Memory Foam Mattresses 2026: 7 Tested & Ranked",
+            "score": 9.5,
+            "length": 51
+          },
+          {
+            "name": "question",
+            "title": "Which matelas memoire de forme Is Worth It in 2026? Honest Review",
+            "score": 8.0,
+            "length": 65
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Matelas Memoire De Forme Buyer's Guide (2026, Tested)",
+            "score": 8.0,
+            "length": 62
+          }
+        ],
+        "recommended": {
+          "name": "number_year",
+          "title": "7 Best Matelas Memoire De Forme for 2026 (Tested & Compared)",
+          "score": 10.0,
+          "length": 60
+        }
+      },
+      {
+        "site": "matelas",
+        "page_path": "https://www.matelas-expert.fr/en/comparatif/meilleurs-matelas-mal-de-dos-2026/",
+        "slug": "meilleurs-matelas-mal-de-dos-2026",
+        "locale": "en",
+        "content_type": "comparatif",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-en/comparatifs/meilleurs-matelas-mal-de-dos-2026.mdx",
+        "current_title": "Best Mattresses for Back Pain 2026: 7 Tested | #1 Relieves Pain in 30 Days",
+        "current_title_score": 8.0,
+        "current_ctr": 0.0038,
+        "expected_ctr": 0.045,
+        "position": 5.6,
+        "impressions": 261,
+        "opportunity_clicks": 10,
+        "variants": [
+          {
+            "name": "number_year",
+            "title": "7 Best Matelas Mal De Dos for 2026 (Tested & Compared)",
+            "score": 10.0,
+            "length": 54
+          },
+          {
+            "name": "llm",
+            "title": "Best Mattresses for Back Pain 2026: 7 Expert-Tested Picks",
+            "score": 9.5,
+            "length": 57
+          },
+          {
+            "name": "question",
+            "title": "Which matelas mal de dos Is Worth It in 2026? Honest Review",
+            "score": 9.0,
+            "length": 59
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Matelas Mal De Dos Buyer's Guide (2026, Tested)",
+            "score": 9.0,
+            "length": 56
+          }
+        ],
+        "recommended": {
+          "name": "number_year",
+          "title": "7 Best Matelas Mal De Dos for 2026 (Tested & Compared)",
+          "score": 10.0,
+          "length": 54
+        }
+      },
+      {
+        "site": "matelas",
+        "page_path": "https://www.matelas-expert.fr/en/comparatif/meilleurs-matelas-couple-2026/",
+        "slug": "meilleurs-matelas-couple-2026",
+        "locale": "en",
+        "content_type": "comparatif",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-en/comparatifs/meilleurs-matelas-couple-2026.mdx",
+        "current_title": "Best Mattresses for Couples 2026: 7 Tested | No More Waking Up",
+        "current_title_score": 8.5,
+        "current_ctr": 0.0,
+        "expected_ctr": 0.06,
+        "position": 5.4,
+        "impressions": 154,
+        "opportunity_clicks": 9,
+        "variants": [
+          {
+            "name": "number_year",
+            "title": "7 Best Matelas Couple for 2026 (Tested & Compared)",
+            "score": 10.0,
+            "length": 50
+          },
+          {
+            "name": "llm",
+            "title": "Best Mattresses for Couples 2026: 7 Tested & Reviewed",
+            "score": 9.5,
+            "length": 53
+          },
+          {
+            "name": "question",
+            "title": "Which matelas couple Is Worth It in 2026? Honest Review",
+            "score": 9.0,
+            "length": 55
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Matelas Couple Buyer's Guide (2026, Tested)",
+            "score": 9.0,
+            "length": 52
+          }
+        ],
+        "recommended": {
+          "name": "number_year",
+          "title": "7 Best Matelas Couple for 2026 (Tested & Compared)",
+          "score": 10.0,
+          "length": 50
+        }
+      },
+      {
+        "site": "matelas",
+        "page_path": "https://www.matelas-expert.fr/en/avis/tediber/",
+        "slug": "tediber",
+        "locale": "en",
+        "content_type": "avis",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-en/avis/tediber.mdx",
+        "current_title": "Tediber Review: Our Opinion on the French Brand",
+        "current_title_score": 5.5,
+        "current_ctr": 0.0,
+        "expected_ctr": 0.06,
+        "position": 4.8,
+        "impressions": 135,
+        "opportunity_clicks": 8,
+        "variants": [
+          {
+            "name": "llm",
+            "title": "Tediber Mattress Review 2026: Tested & Rated by Experts",
+            "score": 8.5,
+            "length": 55
+          },
+          {
+            "name": "question",
+            "title": "Which tediber Is Worth It in 2026? Honest Review",
+            "score": 8.0,
+            "length": 48
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Tediber Buyer's Guide (2026, Tested)",
+            "score": 8.0,
+            "length": 45
+          }
+        ],
+        "recommended": {
+          "name": "llm",
+          "title": "Tediber Mattress Review 2026: Tested & Rated by Experts",
+          "score": 8.5,
+          "length": 55
+        }
+      },
+      {
+        "site": "matelas",
+        "page_path": "https://www.matelas-expert.fr/comparatif/meilleur-oreiller-memoire-de-forme/",
+        "slug": "meilleur-oreiller-memoire-de-forme",
+        "locale": "fr",
+        "content_type": "comparatif",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content/comparatifs/meilleur-oreiller-memoire-de-forme.mdx",
+        "current_title": "Oreiller Mémoire de Forme 2026 : Avis & Testé Top 5",
+        "current_title_score": 8.5,
+        "current_ctr": 0.0067,
+        "expected_ctr": 0.028,
+        "position": 8.1,
+        "impressions": 297,
+        "opportunity_clicks": 6,
+        "variants": [
+          {
+            "name": "power_word",
+            "title": "Guide d'achat ultime oreiller memoire de forme 2026 (testé)",
+            "score": 9.0,
+            "length": 59
+          },
+          {
+            "name": "number_year",
+            "title": "7 meilleurs oreiller memoire de forme 2026 (testés & comparés)",
+            "score": 8.0,
+            "length": 62
+          },
+          {
+            "name": "llm",
+            "title": "Meilleur Oreiller Mémoire de Forme 2026 : Comparatif & Avis",
+            "score": 7.5,
+            "length": 59
+          },
+          {
+            "name": "question",
+            "title": "Quel oreiller memoire de forme choisir en 2026 ? Avis honnête",
+            "score": 7.0,
+            "length": 61
+          }
+        ],
+        "recommended": null
+      },
+      {
+        "site": "matelas",
+        "page_path": "https://www.matelas-expert.fr/en/comparatif/meilleurs-matelas-orthopedique-2026/",
+        "slug": "meilleurs-matelas-orthopedique-2026",
+        "locale": "en",
+        "content_type": "comparatif",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-en/comparatifs/meilleurs-matelas-orthopedique-2026.mdx",
+        "current_title": "Best Orthopedic Mattresses 2026: 7 Tested | Back Pain Relief Guaranteed",
+        "current_title_score": 8.0,
+        "current_ctr": 0.0,
+        "expected_ctr": 0.035,
+        "position": 6.8,
+        "impressions": 196,
+        "opportunity_clicks": 6,
+        "variants": [
+          {
+            "name": "number_year",
+            "title": "7 Best Matelas Orthopedique for 2026 (Tested & Compared)",
+            "score": 10.0,
+            "length": 56
+          },
+          {
+            "name": "llm",
+            "title": "Best Orthopedic Mattresses 2026: 7 Tested for Back Pain",
+            "score": 9.5,
+            "length": 55
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Matelas Orthopedique Buyer's Guide (2026, Tested)",
+            "score": 9.0,
+            "length": 58
+          },
+          {
+            "name": "question",
+            "title": "Which matelas orthopedique Is Worth It in 2026? Honest Review",
+            "score": 8.0,
+            "length": 61
+          }
+        ],
+        "recommended": {
+          "name": "number_year",
+          "title": "7 Best Matelas Orthopedique for 2026 (Tested & Compared)",
+          "score": 10.0,
+          "length": 56
+        }
+      }
+    ],
+    "cafe": [
+      {
+        "site": "cafe",
+        "page_path": "https://www.brewmance.fr/en/comparatif/best-espresso-machine-under-300",
+        "slug": "best-espresso-machine-under-300",
+        "locale": "en",
+        "content_type": "comparatif",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/cafe/content-en/comparatifs/best-espresso-machine-under-300.mdx",
+        "current_title": "Best Espresso Machine Under $300 2026: 7 Tested | #1 for Beginners",
+        "current_title_score": 8.0,
+        "current_ctr": 0.0093,
+        "expected_ctr": 0.035,
+        "position": 7.1,
+        "impressions": 753,
+        "opportunity_clicks": 19,
+        "variants": [
+          {
+            "name": "llm",
+            "title": "Best Espresso Machines Under $300 (2026) – 7 Models Tested",
+            "score": 10.0,
+            "length": 58
+          },
+          {
+            "name": "number_year",
+            "title": "7 Best Espresso Machine Under 300 for 2026 (Tested & Compared)",
+            "score": 9.0,
+            "length": 62
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Espresso Machine Under 300 Buyer's Guide (2026, Tested)",
+            "score": 8.0,
+            "length": 64
+          },
+          {
+            "name": "question",
+            "title": "Which espresso machine under 300 Is Worth It in 2026? Honest Review",
+            "score": 7.5,
+            "length": 67
+          }
+        ],
+        "recommended": {
+          "name": "llm",
+          "title": "Best Espresso Machines Under $300 (2026) – 7 Models Tested",
+          "score": 10.0,
+          "length": 58
+        }
+      }
+    ],
+    "pixinstant": [
+      {
+        "site": "pixinstant",
+        "page_path": "https://www.pixinstant.com/en/guide/how-to-tell-if-instax-film-is-expired/",
+        "slug": "how-to-tell-if-instax-film-is-expired",
+        "locale": "en",
+        "content_type": "guide",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/en/guides/how-to-tell-if-instax-film-is-expired.mdx",
+        "current_title": "Instax Film Expired? 5 Signs to Check (2026)",
+        "current_title_score": 7.5,
+        "current_ctr": 0.0037,
+        "expected_ctr": 0.028,
+        "position": 7.8,
+        "impressions": 1360,
+        "opportunity_clicks": 33,
+        "variants": [
+          {
+            "name": "power_word",
+            "title": "Ultimate How To Tell If Instax Buyer's Guide (2026, Tested)",
+            "score": 9.0,
+            "length": 59
+          },
+          {
+            "name": "llm",
+            "title": "Is Your Instax Film Expired? 5 Warning Signs (2026 Guide)",
+            "score": 9.0,
+            "length": 57
+          },
+          {
+            "name": "question",
+            "title": "Which how to tell if instax Is Worth It in 2026? Honest Review",
+            "score": 8.0,
+            "length": 62
+          }
+        ],
+        "recommended": {
+          "name": "power_word",
+          "title": "Ultimate How To Tell If Instax Buyer's Guide (2026, Tested)",
+          "score": 9.0,
+          "length": 59
+        }
+      },
+      {
+        "site": "pixinstant",
+        "page_path": "https://www.pixinstant.com/en/comparatif/instax-vs-polaroid-2026/",
+        "slug": "instax-vs-polaroid-2026",
+        "locale": "en",
+        "content_type": "comparatif",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/en/comparatifs/instax-vs-polaroid-2026.mdx",
+        "current_title": "Instax vs Polaroid 2026: Full Comparison | Film Price, Format & Quality",
+        "current_title_score": 6.0,
+        "current_ctr": 0.0,
+        "expected_ctr": 0.045,
+        "position": 6.5,
+        "impressions": 696,
+        "opportunity_clicks": 31,
+        "variants": [
+          {
+            "name": "number_year",
+            "title": "7 Best Instax Polaroid for 2026 (Tested & Compared)",
+            "score": 10.0,
+            "length": 51
+          },
+          {
+            "name": "question",
+            "title": "Which instax polaroid Is Worth It in 2026? Honest Review",
+            "score": 9.0,
+            "length": 56
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Instax Polaroid Buyer's Guide (2026, Tested)",
+            "score": 9.0,
+            "length": 53
+          },
+          {
+            "name": "llm",
+            "title": "Instax vs Polaroid: Which Instant Camera Wins in 2026?",
+            "score": 8.0,
+            "length": 54
+          }
+        ],
+        "recommended": {
+          "name": "number_year",
+          "title": "7 Best Instax Polaroid for 2026 (Tested & Compared)",
+          "score": 10.0,
+          "length": 51
+        }
+      },
+      {
+        "site": "pixinstant",
+        "page_path": "https://www.pixinstant.com/en/comparatif/instax-mini-12-vs-mini-11/",
+        "slug": "instax-mini-12-vs-mini-11",
+        "locale": "en",
+        "content_type": "comparatif",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/en/comparatifs/instax-mini-12-vs-mini-11.mdx",
+        "current_title": "Instax Mini 12 vs 11 (2026): 7 Real Differences | Which to Buy?",
+        "current_title_score": 9.0,
+        "current_ctr": 0.0032,
+        "expected_ctr": 0.018,
+        "position": 9.5,
+        "impressions": 1565,
+        "opportunity_clicks": 23,
+        "variants": [
+          {
+            "name": "number_year",
+            "title": "7 Best Instax Mini 12 Mini 11 for 2026 (Tested & Compared)",
+            "score": 10.0,
+            "length": 58
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Instax Mini 12 Mini 11 Buyer's Guide (2026, Tested)",
+            "score": 10.0,
+            "length": 60
+          },
+          {
+            "name": "question",
+            "title": "Which instax mini 12 mini 11 Is Worth It in 2026? Honest Review",
+            "score": 9.0,
+            "length": 63
+          },
+          {
+            "name": "llm",
+            "title": "Instax Mini 12 vs 11: Which Should You Actually Buy? (2026)",
+            "score": 9.0,
+            "length": 59
+          }
+        ],
+        "recommended": {
+          "name": "number_year",
+          "title": "7 Best Instax Mini 12 Mini 11 for 2026 (Tested & Compared)",
+          "score": 10.0,
+          "length": 58
+        }
+      },
+      {
+        "site": "pixinstant",
+        "page_path": "https://www.pixinstant.com/en/comparatif/best-instax-mini-2026/",
+        "slug": "best-instax-mini-2026",
+        "locale": "en",
+        "content_type": "comparatif",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/en/comparatifs/best-instax-mini-2026.mdx",
+        "current_title": "Best Instax Mini 2026: Mini 12 vs 11 vs 99 Tested | Our Winner",
+        "current_title_score": 8.5,
+        "current_ctr": 0.0012,
+        "expected_ctr": 0.018,
+        "position": 9.7,
+        "impressions": 815,
+        "opportunity_clicks": 13,
+        "variants": [
+          {
+            "name": "llm",
+            "title": "Best Instax Mini 2026: Mini 12 vs 11 vs 99 (We Tested All 3)",
+            "score": 10.0,
+            "length": 60
+          },
+          {
+            "name": "number_year",
+            "title": "7 Best Instax Mini for 2026 (Tested & Compared)",
+            "score": 9.0,
+            "length": 47
+          },
+          {
+            "name": "question",
+            "title": "Which instax mini Is Worth It in 2026? Honest Review",
+            "score": 9.0,
+            "length": 52
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Instax Mini Buyer's Guide (2026, Tested)",
+            "score": 8.0,
+            "length": 49
+          }
+        ],
+        "recommended": {
+          "name": "llm",
+          "title": "Best Instax Mini 2026: Mini 12 vs 11 vs 99 (We Tested All 3)",
+          "score": 10.0,
+          "length": 60
+        }
+      },
+      {
+        "site": "pixinstant",
+        "page_path": "https://www.pixinstant.com/en/guide/instax-mini-12-film-guide/",
+        "slug": "instax-mini-12-film-guide",
+        "locale": "en",
+        "content_type": "guide",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/en/guides/instax-mini-12-film-guide.mdx",
+        "current_title": "Instax Mini 12 Film Guide 2026: Price, Where to Buy & Money-Saving Tips",
+        "current_title_score": 7.0,
+        "current_ctr": 0.0,
+        "expected_ctr": 0.022,
+        "position": 9.1,
+        "impressions": 414,
+        "opportunity_clicks": 9,
+        "variants": [
+          {
+            "name": "question",
+            "title": "Which instax mini 12 film Is Worth It in 2026? Honest Review",
+            "score": 10.0,
+            "length": 60
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Instax Mini 12 Film Buyer's Guide (2026, Tested)",
+            "score": 10.0,
+            "length": 57
+          },
+          {
+            "name": "llm",
+            "title": "Instax Mini 12 Film: Where to Buy Cheap in 2026",
+            "score": 7.5,
+            "length": 47
+          }
+        ],
+        "recommended": {
+          "name": "question",
+          "title": "Which instax mini 12 film Is Worth It in 2026? Honest Review",
+          "score": 10.0,
+          "length": 60
+        }
+      },
+      {
+        "site": "pixinstant",
+        "page_path": "https://www.pixinstant.com/en/comparatif/best-instant-cameras-2026/",
+        "slug": "best-instant-cameras-2026",
+        "locale": "en",
+        "content_type": "comparatif",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/en/comparatifs/best-instant-cameras-2026.mdx",
+        "current_title": "Best Instant Cameras 2026: 10 Tested & Ranked | Buyer's Guide",
+        "current_title_score": 8.5,
+        "current_ctr": 0.0,
+        "expected_ctr": 0.018,
+        "position": 10.4,
+        "impressions": 455,
+        "opportunity_clicks": 8,
+        "variants": [
+          {
+            "name": "number_year",
+            "title": "7 Best Instant Cameras for 2026 (Tested & Compared)",
+            "score": 10.0,
+            "length": 51
+          },
+          {
+            "name": "llm",
+            "title": "Best Instant Cameras 2026: We Tested 10 (Our Top Picks)",
+            "score": 10.0,
+            "length": 55
+          },
+          {
+            "name": "question",
+            "title": "Which instant cameras Is Worth It in 2026? Honest Review",
+            "score": 9.0,
+            "length": 56
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Instant Cameras Buyer's Guide (2026, Tested)",
+            "score": 9.0,
+            "length": 53
+          }
+        ],
+        "recommended": {
+          "name": "number_year",
+          "title": "7 Best Instant Cameras for 2026 (Tested & Compared)",
+          "score": 10.0,
+          "length": 51
+        }
+      },
+      {
+        "site": "pixinstant",
+        "page_path": "https://www.pixinstant.com/en/comparatif/instax-mini-99-vs-mini-12/",
+        "slug": "instax-mini-99-vs-mini-12",
+        "locale": "en",
+        "content_type": "comparatif",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/en/comparatifs/instax-mini-99-vs-mini-12.mdx",
+        "current_title": "Instax Mini 12 vs 99 (2026): Full Comparison | PixInstant",
+        "current_title_score": 9.0,
+        "current_ctr": 0.0167,
+        "expected_ctr": 0.035,
+        "position": 7.4,
+        "impressions": 420,
+        "opportunity_clicks": 7,
+        "variants": [
+          {
+            "name": "number_year",
+            "title": "7 Best Instax Mini 99 Mini 12 for 2026 (Tested & Compared)",
+            "score": 10.0,
+            "length": 58
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Instax Mini 99 Mini 12 Buyer's Guide (2026, Tested)",
+            "score": 10.0,
+            "length": 60
+          },
+          {
+            "name": "question",
+            "title": "Which instax mini 99 mini 12 Is Worth It in 2026? Honest Review",
+            "score": 9.0,
+            "length": 63
+          },
+          {
+            "name": "llm",
+            "title": "Instax Mini 12 vs 99: Which Should You Buy in 2026?",
+            "score": 9.0,
+            "length": 51
+          }
+        ],
+        "recommended": {
+          "name": "number_year",
+          "title": "7 Best Instax Mini 99 Mini 12 for 2026 (Tested & Compared)",
+          "score": 10.0,
+          "length": 58
+        }
+      },
+      {
+        "site": "pixinstant",
+        "page_path": "https://www.pixinstant.com/en/guide/best-instant-camera-for-kids-2026/",
+        "slug": "best-instant-camera-for-kids-2026",
+        "locale": "en",
+        "content_type": "guide",
+        "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/en/guides/best-instant-camera-for-kids-2026.mdx",
+        "current_title": "Best Instant Camera for Kids 2026: Age-by-Age Guide",
+        "current_title_score": 8.5,
+        "current_ctr": 0.0023,
+        "expected_ctr": 0.018,
+        "position": 10.4,
+        "impressions": 437,
+        "opportunity_clicks": 6,
+        "variants": [
+          {
+            "name": "llm",
+            "title": "Best Instant Cameras for Kids 2026 (Tested by Age Group)",
+            "score": 9.0,
+            "length": 56
+          },
+          {
+            "name": "question",
+            "title": "Which instant camera for kids Is Worth It in 2026? Honest Review",
+            "score": 8.0,
+            "length": 64
+          },
+          {
+            "name": "power_word",
+            "title": "Ultimate Instant Camera For Kids Buyer's Guide (2026, Tested)",
+            "score": 8.0,
+            "length": 61
+          }
+        ],
+        "recommended": null
+      }
+    ]
+  }
+}
