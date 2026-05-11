@@ -310,8 +310,26 @@ def count_words(body: str) -> int:
 
 # ── Path resolution ──────────────────────────────────────────────────────
 
+LOCALE_DIR_NAMES = {"en", "de", "es", "it", "uk", "ja"}
+
+
 def resolve_mdx_path(site_slug: str, article_slug: str, locale_hint: Optional[str] = None) -> Optional[Path]:
-    """Resolve the MDX file path for an article given site and slug."""
+    """Resolve the MDX file path for an existing article in the given locale.
+
+    Locale-aware: on parallel-layout sites (matelas/bureau/cafe — `content/`
+    default + `content-<loc>/`) and nested-layout sites (pixinstant — `content/`
+    + `content/<loc>/`), the source file MUST come from the requested locale or
+    we'll translate the wrong language.
+
+    Algorithm:
+      - Default locale → search only under `content/` excluding `content/<loc>/`
+        subtrees.
+      - Non-default locale → search `content-<loc>/**` and `content/<loc>/**`.
+      - Monorepo (airpurify/safehive/pawhive) → search `content/**/<loc>/**`
+        scoped to the explicit locale only.
+
+    Returns None if no matching file exists in the requested locale.
+    """
     site = SITES.get(site_slug)
     if not site:
         print(f"  ⚠️ Unknown site: {site_slug}")
@@ -327,6 +345,8 @@ def resolve_mdx_path(site_slug: str, article_slug: str, locale_hint: Optional[st
     if locale not in LOCALES:
         locale = site["default_locale"]
 
+    default_locale = site["default_locale"]
+
     search_patterns: List[Path] = []
 
     if site["is_monorepo"]:
@@ -336,8 +356,44 @@ def resolve_mdx_path(site_slug: str, article_slug: str, locale_hint: Optional[st
         search_patterns.append(repo / "content" / locale / f"{article_slug}.mdx")
         search_patterns.append(repo / "deploy" / "content" / locale / f"{article_slug}.mdx")
     else:
+        # Parallel layout: content-<locale>/<slug>.mdx
         search_patterns.append(repo / f"content-{locale}" / f"{article_slug}.mdx")
-        search_patterns.append(repo / "content" / locale / f"{article_slug}.mdx")
+        # Nested layout: content/<locale>/<slug>.mdx (non-default only — never
+        # for default locale, which lives directly under content/).
+        if locale != default_locale:
+            search_patterns.append(repo / "content" / locale / f"{article_slug}.mdx")
+
+    for p in search_patterns:
+        if p.exists():
+            return p
+
+    # Locale-scoped recursive fallback. Critical: scope rglob to the correct
+    # subtree so a FR resolve cannot return a content-en/ file (and vice versa).
+    if site["is_monorepo"]:
+        # content/<any>/<locale>/**/<slug>.mdx — scope to the explicit locale.
+        for candidate in (repo / "content").glob(f"*/{locale}/**/*.mdx"):
+            if candidate.stem == article_slug:
+                return candidate
+        deploy_root = repo / "deploy" / "content"
+        if deploy_root.exists():
+            for candidate in deploy_root.glob(f"*/{locale}/**/*.mdx"):
+                if candidate.stem == article_slug:
+                    return candidate
+    elif locale == default_locale:
+        # Default locale → walk content/ but skip content/<other-locale>/ subtrees.
+        content_dir = repo / "content"
+        if content_dir.exists():
+            for candidate in content_dir.rglob("*.mdx"):
+                try:
+                    rel = candidate.relative_to(content_dir).parts
+                except ValueError:
+                    continue
+                if rel and rel[0] in LOCALE_DIR_NAMES:
+                    continue  # nested locale subdir → not default-locale content
+                if candidate.stem == article_slug:
+                    return candidate
+    else:
+        # Non-default locale → search content-<loc>/ AND content/<loc>/ subtrees.
         locale_dir = repo / f"content-{locale}"
         if locale_dir.exists():
             for candidate in locale_dir.rglob("*.mdx"):
@@ -348,20 +404,6 @@ def resolve_mdx_path(site_slug: str, article_slug: str, locale_hint: Optional[st
             for candidate in content_locale_dir.rglob("*.mdx"):
                 if candidate.stem == article_slug:
                     return candidate
-        if locale == site["default_locale"]:
-            content_dir = repo / "content"
-            if content_dir.exists():
-                for candidate in content_dir.rglob("*.mdx"):
-                    if candidate.stem == article_slug:
-                        return candidate
-
-    for p in search_patterns:
-        if p.exists():
-            return p
-
-    for candidate in repo.rglob("*.mdx"):
-        if candidate.stem == article_slug:
-            return candidate
 
     print(f"  ⚠️ Could not resolve MDX path for {site_slug}/{article_slug} (locale={locale})")
     return None

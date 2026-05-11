@@ -11,8 +11,8 @@ After fixing `agent_ctr_optimizer.py:_find_mdx_for_url` to handle both parallel 
 | `agent_url_health.py` | `_site_slugs` | **Y** | **high** | ✓ commit (this PR) |
 | `agent_cro_optimizer.py` | `rewrite_asin_in_files` | N (false positive from audit — `content/**/*.mdx` does catch nested) | high | verified, no change |
 | `agent_seo_auditor.py` | `find_mdx_files` | Partial (auto-fix path) | high | deferred |
-| `agent_writer.py` | `resolve_mdx_path` | Partial (fallback `rglob("*.mdx")`) | high | deferred |
-| `agent_translator.py` | `resolve_mdx_path` | Partial (fallback `rglob("*.mdx")`) | high | deferred |
+| `agent_writer.py` | `resolve_mdx_path` | Partial (fallback `rglob("*.mdx")`) | high | **fixed** (this commit) |
+| `agent_translator.py` | `resolve_mdx_path` | Partial (fallback `rglob("*.mdx")`) | high | **fixed** (this commit) |
 | `agent_reviewer.py` | `resolve_mdx_path` | Partial (fallback `rglob("*.mdx")`) | low (read-only analysis) | deferred |
 | `agent_syndication.py` | `_mdx_inventory` | Partial (post-filters correctly) | low (queues events; doesn't write) | deferred |
 
@@ -33,13 +33,15 @@ Bonus: old code recursed into `node_modules`, which is why matelas's rglob retur
 
 ## Deferred — high-risk, defer-with-explicit-reason
 
-`agent_writer.py` and `agent_translator.py` use a fallback `rglob("*.mdx")` that returns the first match across locales. On parallel-layout sites, this could write a French article to `content-en/` (or vice versa). However:
+~~`agent_writer.py` and `agent_translator.py` use a fallback `rglob("*.mdx")`…~~ **Fixed in follow-up commit.** Both now:
 
-- These agents are gated by Hermes events (target_agent dispatch) and aren't on the daily workflow at full autopilot
-- A wrong-locale write would show up immediately in `git diff` review before publish
-- The fix requires understanding each caller's event payload (which has the locale) and threading it through `resolve_mdx_path`
+- Drop the cross-locale `repo.rglob("*.mdx")` terminal fallback entirely.
+- For default-locale resolution on `content/`, exclude `content/<en|de|es|it|uk|ja>/` subtrees (closes nested-layout cross-locale leak on aspirateur/pixinstant).
+- For non-default locale, search only `content-<loc>/**` AND `content/<loc>/**`.
+- For monorepo sites, scope rglob to `content/*/<loc>/**` so an EN resolve cannot return a JA file.
+- Caller sites verified: both `process_event` and `process_events_parallel` in writer, plus `process_event`/CLI test in translator, all pass `locale_hint` from the event payload. No caller changes needed.
 
-Recommendation: fix when next touching these scripts, or in a dedicated session.
+Coverage: `scripts/test_writer_translator_paths.py` — 11 tests including a synthetic-fixture test that proves the fallback is dead.
 
 ## `agent_cro_optimizer.py` — false positive from audit
 
