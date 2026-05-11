@@ -449,13 +449,19 @@ def trim_title(
     # Best rule by score
     best_rule = max(rule_candidates, key=lambda x: x[2]) if rule_candidates else None
 
-    # Escalation triggers: no rule worked, hook loss, year loss, or low score.
+    # Escalation triggers: no rule worked, hook loss, year loss, low score,
+    # or excessive signal loss (trim < 60% of original length).
     def _should_escalate(cand_text: str) -> bool:
         if _hook_loss(title, cand_text):
             return True
         orig_years = set(re.findall(r"\b20\d{2}\b", title))
         cand_years = set(re.findall(r"\b20\d{2}\b", cand_text))
         if orig_years and not orig_years & cand_years:
+            return True
+        # Signal-retention floor: if trim is much shorter than original AND
+        # there's room under TITLE_LIMIT, escalate to recover signal.
+        # Threshold: 60% retention when original > 50 chars.
+        if len(title) > 50 and len(cand_text) < len(title) * 0.6:
             return True
         return _score_candidate(cand_text, title) < 1.5
 

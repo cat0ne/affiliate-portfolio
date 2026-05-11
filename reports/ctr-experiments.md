@@ -59,6 +59,44 @@ For each row above, log:
 
 **Kill criterion**: if median rank-controlled ΔCTR at T+28 is not ≥+15%, this cohort failed and we revert.
 
+## Cohort 2026-05-11 (cohort 2, n=9) — extension
+
+Lower-impression range (37-63 impr/7d) but still trims with hook/year preserved.
+
+| Site | Page | Change type | Pre impr/7d | Pre pos | Old title (len) | New title (len) |
+|---|---|---|---|---|---|---|
+| aspirateur | `/en/guide/best-robot-vacuum-under-300-2026/` | trim-rule (pipe_drop) | 63 | 7.7 | `Best Robot Vacuum Under $300 2026: 5 Tested & Ranked \| #1 for Small Homes` (73) | `Best Robot Vacuum Under $300 2026: 5 Tested & Ranked` (52) |
+| pixinstant | `/en/comparatif/polaroid-now-gen2-vs-instax-mini-12/` | trim-rule (pipe_drop) | 59 | 8.4 | `Polaroid Now Gen 2 vs Instax Mini 12: 6 Differences Tested \| Buyer's Guide` (74) | `Polaroid Now Gen 2 vs Instax Mini 12: 6 Differences Tested` (58) |
+| matelas | `/en/comparatif/meilleurs-matelas-moins-de-500-euros/` | trim-rule (pipe_drop) | 53 | 8.1 | `Best Mattresses Under €500 2026: 7 Tested \| Quality on a Budget` (63) | `Best Mattresses Under €500 2026: 7 Tested` (41) |
+| pixinstant | `/en/test/polaroid-now-gen2-review/` | trim-gemini | 49 | 9.6 | `Polaroid Now Gen 2 Review 2026: Large Format Tested \| Worth €130?` (65) | `Polaroid Now Gen 2 Review 2026: Worth €130?` (43) |
+| pixinstant | `/en/comparatif/best-instant-camera-under-100-2026/` | trim-rule (pipe_drop) | 41 | 8.3 | `Best Instant Camera Under £100 2026: 5 Tested \| #1 for Beginners` (64) | `Best Instant Camera Under £100 2026: 5 Tested` (45) |
+| pixinstant | `/comparatif/meilleur-instax-mini-2026/` (FR) | trim-rule (pipe_drop) | 39 | 9.5 | `Meilleur Instax Mini 2026 : Mini 12 vs 11 vs 99 Testés \| Notre Gagnant` (70) | `Meilleur Instax Mini 2026 : Mini 12 vs 11 vs 99 Testés` (54) |
+| matelas | `/en/comparatif/meilleur-matelas-latex-naturel/` | trim-rule (pipe_drop) | 38 | 7.7 | `Best Natural Latex Mattress 2026: 7 Tested \| Organic & Sustainable` (66) | `Best Natural Latex Mattress 2026: 7 Tested` (42) |
+| matelas | `/en/guide/tailles-matelas-dimensions/` | trim-gemini | 37 | 8.1 | `Mattress Sizes & Dimensions Guide 2026: EU, UK & US Comparison Chart` (68) | `Mattress Sizes Guide 2026: EU, UK & US Comparison Chart` (55) |
+| aspirateur | `/es/comparatif/mejores-aspiradoras-sin-cable-2026/` | trim-rule (pipe_drop) | 37 | 4.5 | `Mejores Aspiradoras sin Cable 2026: 5 Testadas \| Ganadora Sorpresa` (66) | `Mejores Aspiradoras sin Cable 2026: 5 Testadas` (46) |
+
+Cohort 2 composition: 7 rule-based trims + 2 Gemini self-critic escalations (Polaroid €130 hook recovery; Mattress Sizes Comparison Chart hook recovery).
+
+By position band:
+- P1 (pos ≤ 5): 1 (Mejores Aspiradoras ES pos 4.5)
+- P2 (pos 6-10): 8
+
+By site: matelas 3, pixinstant 4, aspirateur 2.
+
+## Combined cohort totals (cohort 1 + cohort 2)
+
+- **21 changes** across 5 sites (matelas 8, pixinstant 9, aspirateur 3, bureau 1)
+- Total pre-change weekly impressions ≈ 2,400
+- 1 CTR-variant rewrite, 11 trim-rule, 9 trim-gemini
+
+## Trimmer agent self-critic enhancements (2026-05-11)
+
+The cohort 2 review surfaced gaps in the original critic. Added in `scripts/agent_title_trimmer.py`:
+- **Signal-retention floor**: escalate to Gemini if trim < 60% of original length when original > 50 chars. Recovers value props the rule pipeline drops too aggressively.
+- More hook intrigue regex coverage (currency, "compare types", "where to buy", "money-saving").
+
+Test suite: `scripts/test_title_trimmer.py` — 16/16 pass.
+
 ## Exclusions
 
 - Brewmance: canonical recovery window through 2026-06-07 — re-evaluate after.
