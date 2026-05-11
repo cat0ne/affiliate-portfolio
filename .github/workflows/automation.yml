@@ -169,6 +169,16 @@ jobs:
         continue-on-error: true
         run: python scripts/agent_title_trimmer.py
 
+      # Description trimmer: same pattern as title trimmer but for meta
+      # descriptions >160 chars (Google SERP truncation). Strips harvested
+      # boilerplate phrases, drops trailing arrow clauses, then sentences,
+      # then comma-clauses. Self-critic loop preserves prices + first sentence.
+      # Queue-only output to reports/agent_queues/description_trim_proposed/{date}.json.
+      # Tests: scripts/test_description_trimmer.py (24/24 pass).
+      - name: Run description trimmer (queue-only, length-only fixes)
+        continue-on-error: true
+        run: python scripts/agent_description_trimmer.py
+
       - name: Run CRO optimizer consumer (apply CTR meta + ASIN events)
         continue-on-error: true
         env:

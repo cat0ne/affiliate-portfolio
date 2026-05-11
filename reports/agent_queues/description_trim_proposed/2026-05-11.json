@@ -1,0 +1,1768 @@
+{
+  "generated_at": "2026-05-11T15:08:30.363763Z",
+  "agent": "agent-description-trimmer",
+  "description_limit": 160,
+  "min_length": 80,
+  "sites_scanned": [
+    "matelas",
+    "bureau",
+    "cafe",
+    "aspirateur",
+    "pixinstant"
+  ],
+  "total_scanned": 1345,
+  "total_over_limit": 103,
+  "proposals": [
+    {
+      "site": "matelas",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content/comparatifs/matelas-pas-cher-qualite.mdx",
+      "locale": "fr",
+      "content_type": "comparatif",
+      "current_description": "Meilleur matelas pas cher qualité 2026 : top 7 testés sous 500€. Comparatif mis à jour pour trouver le meilleur rapport. avec nos conseils d'experts et nos recommandations pour un sommeil de qualité.",
+      "current_length": 199,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "matelas",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content/comparatifs/top-matelas-160x200.mdx",
+      "locale": "fr",
+      "content_type": "comparatif",
+      "current_description": "Top matelas 160x200 2026 : top 7 testés. Comparatif mis à jour avec prix, confort et durabilité. qualite avec nos conseils d'experts et nos recommandations pour un sommeil de qualité.",
+      "current_length": 183,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "matelas",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content/comparatifs/ressort-ou-mousse-mal-de-dos.mdx",
+      "locale": "fr",
+      "content_type": "comparatif",
+      "current_description": "Ressort ou mousse mal de dos 2026 : lequel choisir ? Top 7 testés. Comparatif mis à jour pour soulager vos douleurs. detaille avec nos conseils d'experts et nos recommandations pour un sommeil de qualité.",
+      "current_length": 204,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "matelas",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-de/comparatifs/beste-matratzen-2026.mdx",
+      "locale": "de",
+      "content_type": "comparatif",
+      "current_description": "10 Matratzen 2026 von Experten 100 Nächte getestet. Unabhängiger Vergleich mit geprüften Preisen. Finden Sie Ihre → Emma, Tediber, Hypnia – das echte Ranking nach Schlaftyp und Budget.",
+      "current_length": 184,
+      "proposed_description": "10 Matratzen 2026 von Experten 100 Nächte getestet. Unabhängiger Vergleich mit geprüften Preisen. Finden Sie Ihre.",
+      "proposed_length": 114,
+      "strategy": "arrow_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "matelas",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-de/comparatifs/top-matelas-160x200.mdx",
+      "locale": "de",
+      "content_type": "comparatif",
+      "current_description": "Top Matratzen 160x200 2026: Top 7 getestet. Aktueller Vergleich mit Preisen, Komfort und Haltbarkeit. Qualitaet mit unseren Expertentipps und Empfehlungen fuer erholsamen Schlaf.",
+      "current_length": 178,
+      "proposed_description": "Top Matratzen 160x200 2026: Top 7 getestet. Aktueller Vergleich mit Preisen, Komfort und Haltbarkeit.",
+      "proposed_length": 101,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "matelas",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-de/comparatifs/ressort-ou-mousse-mal-de-dos.mdx",
+      "locale": "de",
+      "content_type": "comparatif",
+      "current_description": "Federkern oder Schaumstoff bei Rückenschmerzen 2026: Welche ist die bessere Wahl? Top 7 getestet. Aktueller Vergleich zur Linderung Ihrer Schmerzen. Detailliert mit Expertentipps und Empfehlungen für erholsamen Schlaf.",
+      "current_length": 218,
+      "proposed_description": "Federkern oder Schaumstoff bei Rückenschmerzen 2026: Welche ist die bessere Wahl? Top 7 getestet. Aktueller Vergleich zur Linderung Ihrer Schmerzen.",
+      "proposed_length": 148,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "matelas",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-es/comparatifs/mejores-colchones-2026.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "10 colchones 2026 probados por expertos durante 100 noches. Comparativa independiente con precios verificados. Encuentra tu → Emma, Tediber, Hypnia – el ranking real según tipo de dormilón y presupuesto.",
+      "current_length": 203,
+      "proposed_description": "10 colchones 2026 probados por expertos durante 100 noches. Comparativa independiente con precios verificados. Encuentra tu.",
+      "proposed_length": 124,
+      "strategy": "arrow_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "matelas",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-es/comparatifs/matelas-pas-cher-qualite.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "Mejor colchón barato calidad 2026 : top 7 probados por menos de 500€. Comparativa actualizada para encontrar la mejor relación. con nuestros consejos de expertos y nuestras recomendaciones para un sueño de calidad.",
+      "current_length": 214,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "matelas",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-es/comparatifs/meilleurs-matelas-soldes.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "Mejores colchones en rebajas 2026 : top 7 modelos en descuento. Comparativa actualizada con precios y promociones. Emma, Tediber, Hypnia para tomar la mejor decisión.",
+      "current_length": 166,
+      "proposed_description": "Mejores colchones en rebajas 2026 : top 7 modelos en descuento. Emma, Tediber, Hypnia para tomar la mejor decisión.",
+      "proposed_length": 115,
+      "strategy": "redundant_phrase_strip",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "matelas",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-es/comparatifs/top-matelas-160x200.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "Top colchones 160x200 2026 : top 7 probados. Comparativa actualizada con precios, confort y durabilidad. calidad con nuestros consejos de expertos y nuestras recomendaciones para un sueño de calidad.",
+      "current_length": 199,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "matelas",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-es/comparatifs/ressort-ou-mousse-mal-de-dos.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "Muelles o espuma dolor de espalda 2026 : ¿cuál elegir? Top 7 probados. Comparativa actualizada para aliviar tus dolores. detallada con nuestros consejos de expertos y nuestras recomendaciones para un sueño de calidad.",
+      "current_length": 217,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "matelas",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-it/comparatifs/migliori-offerte-materassi-black-friday-2026.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "Black Friday 2026: migliori offerte materassi. Top 7 modelli con sconti. Confronto aggiornato con prezzi. — sconti esclusivi fino al 50% sui migliori materassi testati.'",
+      "current_length": 169,
+      "proposed_description": "Black Friday 2026: migliori offerte materassi. Top 7 modelli con sconti. Confronto aggiornato con prezzi.",
+      "proposed_length": 105,
+      "strategy": "redundant_phrase_strip",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "matelas",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-it/comparatifs/migliori-materassi-2026.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "10 materassi 2026 testati dagli esperti per 100 notti. Confronto indipendente con prezzi verificati. Trova il Suo → Emma, Tediber, Hypnia – la classifica reale secondo il tipo di dormiente e il budget.",
+      "current_length": 201,
+      "proposed_description": "10 materassi 2026 testati dagli esperti per 100 notti. Confronto indipendente con prezzi verificati. Trova il Suo.",
+      "proposed_length": 114,
+      "strategy": "arrow_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "matelas",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-it/comparatifs/matelas-pas-cher-qualite.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "Miglior materasso economico di qualità 2026 : top 7 testati sotto i 500€. Comparativa aggiornata per trovare il miglior rapporto. con i nostri consigli esperti e le nostre raccomandazioni per un sonno di qualità.",
+      "current_length": 212,
+      "proposed_description": "Miglior materasso economico di qualità 2026 : top 7 testati sotto i 500€. Comparativa aggiornata per trovare il miglior rapporto.",
+      "proposed_length": 129,
+      "strategy": "redundant_phrase_strip",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "matelas",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-it/comparatifs/top-matelas-160x200.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "Top materasso 160x200 2026: top 7 testati. Confronto aggiornato con prezzi, comfort e durabilita. qualita con i nostri consigli di esperti e le nostre raccomandazioni per un sonno di qualita.",
+      "current_length": 191,
+      "proposed_description": "Top materasso 160x200 2026: top 7 testati. Confronto aggiornato con prezzi, comfort e durabilita.",
+      "proposed_length": 97,
+      "strategy": "redundant_phrase_strip",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "matelas",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-it/comparatifs/ressort-ou-mousse-mal-de-dos.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "Molle o schiuma mal di schiena 2026: quale scegliere? Top 7 testati. Confronto aggiornato per alleviare i tuoi dolori. dettagliato con i nostri consigli di esperti e le nostre raccomandazioni per un sonno di qualita.",
+      "current_length": 216,
+      "proposed_description": "Molle o schiuma mal di schiena 2026: quale scegliere? Top 7 testati. Confronto aggiornato per alleviare i tuoi dolori.",
+      "proposed_length": 118,
+      "strategy": "redundant_phrase_strip",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content/comparatifs/meilleur-bureau-assis-debout-moins-500-euros-2026.mdx",
+      "locale": "fr",
+      "content_type": "comparatif",
+      "current_description": "5 bureaux assis-debout à moins de 500€ testés 2026. Double moteur et designs premium. Notre sélection → Comparatif 2026 des meilleurs bureaux assis-debout à moins de 500€. Modèles électriques, double moteur et designs premium pour télétravailleurs exigeants.",
+      "current_length": 258,
+      "proposed_description": "5 bureaux assis-debout à moins de 500€ testés 2026. Double moteur et designs premium. Notre sélection.",
+      "proposed_length": 102,
+      "strategy": "arrow_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content/comparatifs/meilleurs-bureaux-assis-debout-2026.mdx",
+      "locale": "fr",
+      "content_type": "comparatif",
+      "current_description": "5 bureaux assis-debout électriques testés en 2026. Stabilité, bruit, garantie : 1 gagnant et les 2 modèles à éviter absolument. sélection rigoureuse et nos tests pour trouver le modèle parfait, du plus économique au plus robuste.",
+      "current_length": 229,
+      "proposed_description": "5 bureaux assis-debout électriques testés en 2026. Stabilité, bruit, garantie : 1 gagnant et les 2 modèles à éviter absolument.",
+      "proposed_length": 127,
+      "strategy": "redundant_phrase_strip",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content/comparatifs/bureau-dangle-vs-bureau-droit-2026.mdx",
+      "locale": "fr",
+      "content_type": "comparatif",
+      "current_description": "Bureau d'angle ou bureau droit ? On compare les deux configurations sur l'espace, l'ergonomie, le prix et les usages. Avec notre tableau comparatif des meilleurs modèles 2026.",
+      "current_length": 175,
+      "proposed_description": "Bureau d'angle ou bureau droit ? On compare les deux configurations sur l'espace, l'ergonomie, le prix et les usages.",
+      "proposed_length": 117,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content/comparatifs/meilleur-bureau-assis-debout-moins-300-euros-2026.mdx",
+      "locale": "fr",
+      "content_type": "comparatif",
+      "current_description": "5 bureaux assis-debout à moins de 300€ testés 2026. Électriques, convertisseurs et designs. Notre comparatif → Découvrez les meilleurs bureaux assis-debout à moins de 300€ en 2026. Comparatif des modèles électriques, convertisseurs et bureaux manuaux pour télétravailleurs et gamers.",
+      "current_length": 283,
+      "proposed_description": "5 bureaux assis-debout à moins de 300€ testés 2026. Électriques, convertisseurs et designs. Notre comparatif.",
+      "proposed_length": 109,
+      "strategy": "arrow_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content/comparatifs/meilleur-bureau-assis-debout-moins-200-euros-2026.mdx",
+      "locale": "fr",
+      "content_type": "comparatif",
+      "current_description": "5 bureaux assis-debout à moins de 200€ testés 2026. Électriques et convertisseurs. Notre sélection → Vous cherchez un bureau assis-debout à moins de 200€ ? Découvrez notre sélection des modèles électriques et convertisseurs qui offrent le meilleur rapport qualité-prix en 2026.",
+      "current_length": 277,
+      "proposed_description": "5 bureaux assis-debout à moins de 200€ testés 2026. Électriques et convertisseurs. Notre sélection → Vous cherchez un bureau assis-debout à moins de 200€ ?",
+      "proposed_length": 155,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content/guides/black-friday-bureau-assis-debout-2026.mdx",
+      "locale": "fr",
+      "content_type": "guide",
+      "current_description": "Black Friday 2026 bureaux assis-debout : meilleures offres FlexiSpot et alternatives. Notre sélection → Découvrez les meilleures offres Black Friday 2026 pour les bureaux assis-debout. FlexiSpot, MAIDeSITe, Fezibo et plus : promotions jusqu'à -30%.",
+      "current_length": 248,
+      "proposed_description": "Black Friday 2026 bureaux assis-debout : meilleures offres FlexiSpot et alternatives. Notre sélection.",
+      "proposed_length": 102,
+      "strategy": "arrow_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content/guides/eclairage-led-bureau-guide.mdx",
+      "locale": "fr",
+      "content_type": "guide",
+      "current_description": "Lampes de bureau LED, bandeaux lumineux, plafonniers : comparez les technologies, trouvez les meilleurs modèles et éclairez votre espace de travail sans fatigue visuelle.",
+      "current_length": 170,
+      "proposed_description": "Lampes de bureau LED, bandeaux lumineux, plafonniers : comparez les technologies.",
+      "proposed_length": 81,
+      "strategy": "comma_clause_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content/guides/chaise-ergonomique-vs-gaming.mdx",
+      "locale": "fr",
+      "content_type": "guide",
+      "current_description": "Chaise ergonomique ou gaming chair ? On compare confort, soutien lombaire, durabilité et rapport qualité/prix pour vous aider à faire le bon choix selon votre usage.",
+      "current_length": 165,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content/guides/bureau-ergonomique-erreurs-a-eviter.mdx",
+      "locale": "fr",
+      "content_type": "guide",
+      "current_description": "Équipement coûteux, mauvais réglages, postures négligées... Découvrez les erreurs les plus courantes qui ruinent l'ergonomie de votre bureau et comment les corriger.",
+      "current_length": 165,
+      "proposed_description": "Équipement coûteux, mauvais réglages. Découvrez les erreurs les plus courantes qui ruinent l'ergonomie de votre bureau et comment les corriger.",
+      "proposed_length": 143,
+      "strategy": "comma_clause_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content/comparatifs/vs/flexispot-e5-petit-espace-vs-fezibo-dual-motor.mdx",
+      "locale": "fr",
+      "content_type": "comparatif",
+      "current_description": "Comparatif indépendant 2026 : tests réels, tableau comparatif et verdict d'expert. Lequel offre le meilleur rapport qualité-prix ? Découvrez-le → FlexiSpot E5 (format compact) ou Fezibo Double Moteur ? Comparatif détaillé des deux bureaux assis-debout phares. Finitions, confort et rapport qualité-prix 2026.",
+      "current_length": 308,
+      "proposed_description": "Comparatif indépendant 2026 : tests réels, tableau comparatif et verdict d'expert. Lequel offre le meilleur rapport qualité-prix ? Découvrez-le.",
+      "proposed_length": 144,
+      "strategy": "arrow_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content/es/comparatifs/mejores-escritorios-elevables-2026.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "¿Cuál es el mejor escritorio elevable eléctrico en 2026? Descubre nuestra selección rigurosa y nuestras pruebas para encontrar el modelo perfecto, desde el más económico hasta el más robusto.",
+      "current_length": 191,
+      "proposed_description": "Descubre nuestra selección rigurosa y nuestras pruebas para encontrar el modelo perfecto, desde el más económico hasta el más robusto.",
+      "proposed_length": 134,
+      "strategy": "redundant_phrase_strip",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content/es/comparatifs/mejores-ofertas-oficina-black-friday-2026.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "Aprovecha el Black Friday 2026 para actualizar tu oficina. Descubre las mejores ofertas en sillas ergonómicas, escritorios elevables y accesorios de oficina seleccionados por expertos.",
+      "current_length": 184,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-de/tests/test-flexispot-e7.mdx",
+      "locale": "de",
+      "content_type": "test",
+      "current_description": "Wir haben den FlexiSpot E7 8 Wochen lang getestet. Doppelmotor, 3-Segment-Rahmen, TÜV-Zertifizierung — unser vollständiger Test des meistverkauften Stehschreibtischs.",
+      "current_length": 166,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-de/tests/test-steelcase-gesture.mdx",
+      "locale": "de",
+      "content_type": "test",
+      "current_description": "Wir haben die Steelcase Gesture (ohne Kopfstütze) 4 Wochen getestet. LiveArm Armlehnen, LiveBack Rückenlehne, Lendenwirbelstütze — unsere vollständige Bewertung.",
+      "current_length": 161,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-de/comparatifs/meilleurs-bureaux-assis-debout-electriques-2026.mdx",
+      "locale": "de",
+      "content_type": "comparatif",
+      "current_description": "Comparatif détaillé des 3 meilleurs bureaux assis-debout électriques en 2026 : FlexiSpot E7 Pro, IKEA Bekant et Seville Classics Airlift. Tests de stabilité, bruit, garantie.",
+      "current_length": 174,
+      "proposed_description": "Comparatif détaillé des 3 meilleurs bureaux assis-debout électriques en 2026 : FlexiSpot E7 Pro, IKEA Bekant et Seville Classics Airlift.",
+      "proposed_length": 137,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-de/comparatifs/bureau-assis-debout-silencieux-comparatif.mdx",
+      "locale": "de",
+      "content_type": "comparatif",
+      "current_description": "Suchen Sie einen leisen höhenverstellbaren Schreibtisch für das Großraumbüro oder das Homeoffice mit Familie? Vergleichen Sie die 6 leisesten Motoren auf dem Markt mit gemessenen Schallpegeln.",
+      "current_length": 192,
+      "proposed_description": "Suchen Sie einen leisen höhenverstellbaren Schreibtisch für das Großraumbüro oder das Homeoffice mit Familie?",
+      "proposed_length": 109,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-de/comparatifs/buerostuhl-vs-gaming-stuhl-2026.mdx",
+      "locale": "de",
+      "content_type": "guide",
+      "current_description": "Ergonomischer Bürostuhl oder Gaming-Stuhl? Wir vergleichen beide Kategorien anhand von Stabilität, Lordosenstütze, Langzeitkomfort und Preis-Leistung. Mit konkreten Modellen und klarem Fazit.",
+      "current_length": 191,
+      "proposed_description": "Ergonomischer Bürostuhl oder Gaming-Stuhl? Wir vergleichen beide Kategorien anhand von Stabilität, Lordosenstütze, Langzeitkomfort und Preis-Leistung.",
+      "proposed_length": 150,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-de/comparatifs/chaise-ergonomique-mal-de-dos-2026.mdx",
+      "locale": "de",
+      "content_type": "comparatif",
+      "current_description": "Leiden Sie unter Rückenschmerzen bei der Arbeit? Entdecken Sie unser Ranking der 7 besten ergonomischen Stühle, speziell ausgewählt zur Linderung von Lendenschmerzen und Verbesserung der Körperhaltung.",
+      "current_length": 201,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-de/comparatifs/stehschreibtisch-vs-normaler-schreibtisch-2026.mdx",
+      "locale": "de",
+      "content_type": "comparatif",
+      "current_description": "Stehschreibtisch oder normaler Schreibtisch? Vollständiger Vergleich 2026: Gesundheit, Produktivität, Preis und Ergonomie. Entdecke, welcher Schreibtisch zu dir passt.",
+      "current_length": 167,
+      "proposed_description": "Stehschreibtisch oder normaler Schreibtisch? Vollständiger Vergleich 2026: Gesundheit, Produktivität, Preis und Ergonomie.",
+      "proposed_length": 122,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-de/guides/tastaturablage-buero-lohnt-sich-kauf.mdx",
+      "locale": "de",
+      "content_type": "guide",
+      "current_description": "Eine Tastaturablage bringt Tastatur und Maus auf die ideale Handgelenkshöhe. Wir erklären, für wen sich der Kauf lohnt, worauf du achten musst und welche Alternativen es gibt.",
+      "current_length": 175,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-de/guides/anti-ermuedungsmatte.mdx",
+      "locale": "de",
+      "content_type": "guide",
+      "current_description": "Eine Anti-Ermüdungsmatte verwandelt die Erfahrung am Stehschreibtisch. Erfahre, wie du das richtige Modell wählst, welche Vorteile sie bietet und welche Fehler du vermeiden solltest.",
+      "current_length": 182,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-de/guides/amenager-bureau-teletravail.mdx",
+      "locale": "de",
+      "content_type": "guide",
+      "current_description": "Wie erstellen Sie einen produktiven und ergonomischen Homeoffice-Arbeitsplatz? Stuhl, Schreibtisch, Beleuchtung, Akustik, Organisation — der vollständige Leitfaden.",
+      "current_length": 164,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-de/guides/ergonomischer-buerostuhl-ratgeber.mdx",
+      "locale": "de",
+      "content_type": "guide",
+      "current_description": "Umfassender Leitfaden zur Auswahl eines ergonomischen Bürostuhls, der zu Ihrer Körperform, Ihrer Arbeit und Ihrem Budget passt. Kriterien, Fallstricke und Auswahl.",
+      "current_length": 163,
+      "proposed_description": "Umfassender Leitfaden zur Auswahl eines ergonomischen Bürostuhls, der zu Ihrer Körperform, Ihrer Arbeit und Ihrem Budget passt.",
+      "proposed_length": 127,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-de/guides/eclairage-led-bureau-guide.mdx",
+      "locale": "de",
+      "content_type": "guide",
+      "current_description": "Lampes de bureau LED, bandeaux lumineux, plafonniers : comparez les technologies, trouvez les meilleurs modèles et éclairez votre espace de travail sans fatigue visuelle.",
+      "current_length": 170,
+      "proposed_description": "Lampes de bureau LED, bandeaux lumineux, plafonniers : comparez les technologies.",
+      "proposed_length": 81,
+      "strategy": "comma_clause_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-de/guides/schreibtischlampe-led-kaufberatung.mdx",
+      "locale": "de",
+      "content_type": "guide",
+      "current_description": "Die richtige LED-Schreibtischlampe schützt Ihre Augen und steigert Ihre Konzentration. Unsere Kaufberatung zeigt, worauf es bei Farbtemperatur, Helligkeit und Flimmerfreiheit ankommt.",
+      "current_length": 183,
+      "proposed_description": "Die richtige LED-Schreibtischlampe schützt Ihre Augen und steigert Ihre Konzentration.",
+      "proposed_length": 86,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-de/guides/ergonomische-fehler-vermeiden.mdx",
+      "locale": "de",
+      "content_type": "guide",
+      "current_description": "Teure Ausrüstung, falsche Einstellungen, vernachlässigte Haltung... Entdecke die häufigsten Fehler, die deine Büroergonomie ruinieren, und wie du sie sofort korrigierst.",
+      "current_length": 169,
+      "proposed_description": "Teure Ausrüstung, falsche Einstellungen. Entdecke die häufigsten Fehler, die deine Büroergonomie ruinieren, und wie du sie sofort korrigierst.",
+      "proposed_length": 142,
+      "strategy": "comma_clause_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-de/guides/ergonomie-am-arbeitsplatz.mdx",
+      "locale": "de",
+      "content_type": "guide",
+      "current_description": "Anleitung zum Einstellen deines Stuhls, Positionieren von Monitoren und Organisieren deines Schreibtischs für schmerzfreies Arbeiten. Bewährte Ergonomie-Prinzipien.",
+      "current_length": 164,
+      "proposed_description": "Anleitung zum Einstellen deines Stuhls, Positionieren von Monitoren und Organisieren deines Schreibtischs für schmerzfreies Arbeiten.",
+      "proposed_length": 133,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-de/guides/chaise-ergonomique-vs-gaming.mdx",
+      "locale": "de",
+      "content_type": "guide",
+      "current_description": "Ergonomiestuhl oder Gaming-Stuhl? Wir vergleichen Komfort, Lendenwirbelstütze, Haltbarkeit und Preis-Leistungs-Verhältnis, um Ihnen bei der richtigen Wahl nach Ihrer Nutzung zu helfen.",
+      "current_length": 184,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-de/guides/bureau-ergonomique-erreurs-a-eviter.mdx",
+      "locale": "de",
+      "content_type": "guide",
+      "current_description": "Teure Ausrüstung, falsche Einstellungen, vernachlässigte Haltung... Entdecken Sie die häufigsten Fehler, die die Ergonomie Ihres Schreibtisches zerstören, und wie Sie sie beheben.",
+      "current_length": 179,
+      "proposed_description": "Teure Ausrüstung, falsche Einstellungen. Entdecken Sie die häufigsten Fehler, die die Ergonomie Ihres Schreibtisches zerstören, und wie Sie sie beheben.",
+      "proposed_length": 152,
+      "strategy": "comma_clause_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-en/comparatifs/meilleurs-bureaux-assis-debout-2026.mdx",
+      "locale": "en",
+      "content_type": "comparatif",
+      "current_description": "5 electric standing desks tested in 2026. Stability, noise, warranty: 1 winner and 2 models to absolutely avoid. Our rigorous selection and tests to find the perfect model, from the most affordable to the most robust.",
+      "current_length": 217,
+      "proposed_description": "5 electric standing desks tested in 2026. Stability, noise, warranty: 1 winner and 2 models to absolutely avoid.",
+      "proposed_length": 112,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-en/comparatifs/meilleurs-bureaux-assis-debout-electriques-2026.mdx",
+      "locale": "en",
+      "content_type": "comparatif",
+      "current_description": "Detailed comparison of the 3 best electric standing desks in 2026: FlexiSpot E7 Pro, IKEA Bekant and Seville Classics Airlift. Stability, noise and warranty tests.",
+      "current_length": 163,
+      "proposed_description": "Detailed comparison of the 3 best electric standing desks in 2026: FlexiSpot E7 Pro, IKEA Bekant and Seville Classics Airlift.",
+      "proposed_length": 126,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-en/comparatifs/top-standing-desks-electric-2026.mdx",
+      "locale": "en",
+      "content_type": "comparatif",
+      "current_description": "Discover our in-depth analysis of the 3 best electric standing desks in 2026: FlexiSpot E7 Pro, IKEA Bekant, and Seville Classics Airlift. Tests, reviews, and buying guide.",
+      "current_length": 172,
+      "proposed_description": "Discover our in-depth analysis of the 3 best electric standing desks in 2026: FlexiSpot E7 Pro, IKEA Bekant, and Seville Classics Airlift.",
+      "proposed_length": 138,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-es/tests/test-flexispot-e7.mdx",
+      "locale": "es",
+      "content_type": "test",
+      "current_description": "Hemos probado el FlexiSpot E7 durante 8 semanas. Motor doble, marco 3 segmentos, certificación TÜV — nuestra opinión completa sobre el escritorio elevable más vendido.",
+      "current_length": 167,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-es/comparatifs/mejores-escritorios-elevables-2026.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "Top 5 escritorios elevables probados 2026. Estabilidad, ruido, garantía: 1 ganador y 2 modelos para evitar absolutamente. selección rigurosa y nuestras pruebas para encontrar el modelo perfecto, desde el más económico hasta el más robusto.",
+      "current_length": 239,
+      "proposed_description": "Top 5 escritorios elevables probados 2026. Estabilidad, ruido, garantía: 1 ganador y 2 modelos para evitar absolutamente.",
+      "proposed_length": 121,
+      "strategy": "redundant_phrase_strip",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-es/comparatifs/meilleur-repose-pieds-bureau-2026.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "¿Piernas pesadas, espalda tensa? Un reposapiés ergonómico lo cambia todo. Nuestra comparativa de los 4 mejores modelos 2026, desde 25€ hasta el premium Fellowes.",
+      "current_length": 161,
+      "proposed_description": "¿Piernas pesadas. Un reposapiés ergonómico lo cambia todo. Nuestra comparativa de los 4 mejores modelos 2026, desde 25€ hasta el premium Fellowes.",
+      "proposed_length": 146,
+      "strategy": "comma_clause_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-es/comparatifs/meilleurs-bureaux-assis-debout-2026.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "5 mesas sit-stand eléctricas probadas en 2026. Estabilidad, ruido, garantía: 1 ganador y los 2 modelos a evitar absolutamente. selección rigurosa y nuestras pruebas para encontrar el modelo perfecto, del más económico al más robusto.",
+      "current_length": 233,
+      "proposed_description": "5 mesas sit-stand eléctricas probadas en 2026. Estabilidad, ruido, garantía: 1 ganador y los 2 modelos a evitar absolutamente.",
+      "proposed_length": 126,
+      "strategy": "redundant_phrase_strip",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-es/comparatifs/meilleurs-bureaux-assis-debout-electriques-2026.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "Comparativo detallado de las 3 mejores mesas sit-stand eléctricas en 2026: FlexiSpot E7 Pro, IKEA Bekant y Seville Classics Airlift. Pruebas de estabilidad, ruido, garantía.",
+      "current_length": 173,
+      "proposed_description": "Comparativo detallado de las 3 mejores mesas sit-stand eléctricas en 2026: FlexiSpot E7 Pro, IKEA Bekant y Seville Classics Airlift.",
+      "proposed_length": 132,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-es/comparatifs/meilleur-convertisseur-bureau-assis-debout-2026.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "No hace falta cambiar de escritorio: un convertidor elevable transforma tu escritorio existente. Nuestra comparativa de los 3 mejores modelos 2026, del presupuesto al premium.",
+      "current_length": 175,
+      "proposed_description": "No hace falta cambiar de escritorio: un convertidor elevable transforma tu escritorio existente.",
+      "proposed_length": 96,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-es/comparatifs/bureau-assis-debout-silencieux-comparatif.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "¿Necesitas un escritorio sentado-de pie silencioso para la oficina abierta o el teletrabajo en familia? Compara los 6 motores más discretos del mercado, con niveles sonoros medidos.",
+      "current_length": 181,
+      "proposed_description": "¿Necesitas un escritorio sentado-de pie silencioso para la oficina abierta o el teletrabajo en familia?",
+      "proposed_length": 103,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-es/comparatifs/bureau-dangle-vs-bureau-droit-2026.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "¿Escritorio en ángulo o recto? Comparamos las dos configuraciones en espacio, ergonomía, precio y usos. Con nuestra tabla comparativa de los mejores modelos 2026.",
+      "current_length": 162,
+      "proposed_description": "Comparamos las dos configuraciones en espacio, ergonomía, precio y usos. Con nuestra tabla comparativa de los mejores modelos 2026.",
+      "proposed_length": 131,
+      "strategy": "redundant_phrase_strip",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-es/comparatifs/chaise-ergonomique-mal-de-dos-2026.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "¿Sufres dolores de espalda en el trabajo? Descubre nuestra clasificación de las 7 mejores sillas ergonómicas especialmente seleccionadas para aliviar las lumbalgias y mejorar la postura.",
+      "current_length": 186,
+      "proposed_description": "Descubre nuestra clasificación de las 7 mejores sillas ergonómicas especialmente seleccionadas para aliviar las lumbalgias y mejorar la postura.",
+      "proposed_length": 144,
+      "strategy": "redundant_phrase_strip",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-es/comparatifs/mejores-brazos-monitor-2026.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "¿Qué brazo articulado de pantalla elegir? Nuestra comparativa de los 5 mejores brazos de escritorio para oficina ergonómica: simple, doble, VESA, carga, calidad de movimiento.",
+      "current_length": 175,
+      "proposed_description": "Nuestra comparativa de los 5 mejores brazos de escritorio para oficina ergonómica: simple, doble, VESA, carga, calidad de movimiento.",
+      "proposed_length": 133,
+      "strategy": "redundant_phrase_strip",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-es/comparatifs/mejor-alfombrilla-escritorio-gaming.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "Mejora tu espacio de trabajo con una alfombrilla de escritorio de alta calidad. Comparamos las mejores opciones en fieltro, cuero PU, corcho y microfibra para gamers y profesionales.",
+      "current_length": 182,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-es/guides/mal-de-dos-au-bureau-solutions.mdx",
+      "locale": "es",
+      "content_type": "guide",
+      "current_description": "El 70% de los teletrabajadores sufre dolores de espalda. Descubre las causas reales del dolor de espalda en la oficina y las soluciones eficaces — silla, postura, ejercicios.",
+      "current_length": 174,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-es/guides/eclairage-led-bureau-guide.mdx",
+      "locale": "es",
+      "content_type": "guide",
+      "current_description": "Lámparas de escritorio LED, tiras luminosas, lámparas de techo : compara las tecnologías, encuentra los mejores modelos e ilumina tu espacio de trabajo sin fatiga visual.",
+      "current_length": 170,
+      "proposed_description": "Lámparas de escritorio LED, tiras luminosas, lámparas de techo : compara las tecnologías.",
+      "proposed_length": 89,
+      "strategy": "comma_clause_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-es/guides/chaise-ergonomique-vs-gaming.mdx",
+      "locale": "es",
+      "content_type": "guide",
+      "current_description": "Silla ergonómica o gaming chair? Comparamos confort, soporte lumbar, durabilidad y relación calidad/precio para ayudarte a tomar la decisión correcta según tu uso.",
+      "current_length": 163,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-es/comparatifs/vs/flexispot-e5-petit-espace-vs-fezibo-dual-motor.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "Comparativo independiente 2026: tests reales, tabla comparativa y veredicto de experto. ¿Cuál ofrece la mejor relación calidad-precio? Descúbrelo → FlexiSpot E5 (formato compacto) o Fezibo Doble Motor? Comparativo detallado de las dos mesas sit-stand estrella. Acabados, confort y relación calidad-precio 2026.",
+      "current_length": 310,
+      "proposed_description": "Comparativo independiente 2026: tests reales, tabla comparativa y veredicto de experto. ¿Cuál ofrece la mejor relación calidad-precio? Descúbrelo.",
+      "proposed_length": 146,
+      "strategy": "arrow_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/tests/test-flexispot-e7.mdx",
+      "locale": "it",
+      "content_type": "test",
+      "current_description": "Abbiamo testato il FlexiSpot E7 per 8 settimane. Motore doppio, telaio 3 segmenti, certificazione TÜV — la nostra opinione completa sulla scrivania regolabile più venduta.",
+      "current_length": 171,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/tests/test-steelcase-gesture.mdx",
+      "locale": "it",
+      "content_type": "test",
+      "current_description": "Abbiamo testato la Steelcase Gesture (senza poggiatesta) per 4 settimane. Braccioli LiveArm, schienale LiveBack, supporto lombare — la nostra recensione completa.",
+      "current_length": 162,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/comparatifs/meilleurs-bureaux-assis-debout-2026.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "5 scrivanie seduti-in piedi elettriche testate nel 2026. Stabilità, rumore, garanzia: 1 vincitore e i 2 modelli da evitare assolutamente. selezione rigorosa e i nostri test per trovare il modello perfetto, dal più economico al più robusto.",
+      "current_length": 239,
+      "proposed_description": "5 scrivanie seduti-in piedi elettriche testate nel 2026. Stabilità, rumore, garanzia: 1 vincitore e i 2 modelli da evitare assolutamente.",
+      "proposed_length": 137,
+      "strategy": "redundant_phrase_strip",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/comparatifs/meilleurs-bureaux-assis-debout-electriques-2026.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "Confronto dettagliato delle 3 migliori scrivanie seduti-in piedi elettriche nel 2026: FlexiSpot E7 Pro, IKEA Bekant e Seville Classics Airlift. Test di stabilità, rumore, garanzia.",
+      "current_length": 180,
+      "proposed_description": "Confronto dettagliato delle 3 migliori scrivanie seduti-in piedi elettriche nel 2026: FlexiSpot E7 Pro, IKEA Bekant e Seville Classics Airlift.",
+      "proposed_length": 143,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/comparatifs/meilleur-convertisseur-bureau-assis-debout-2026.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "Non serve cambiare scrivania: un convertitore seduti-in piedi trasforma la vostra scrivania esistente. Il nostro confronto dei 3 migliori modelli 2026, dal budget al premium.",
+      "current_length": 174,
+      "proposed_description": "Non serve cambiare scrivania: un convertitore seduti-in piedi trasforma la vostra scrivania esistente.",
+      "proposed_length": 102,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/comparatifs/bureau-assis-debout-silencieux-comparatif.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "Hai bisogno di una scrivania sit-stand silenziosa per l'ufficio open space o il lavoro da casa in famiglia? Confronta i 6 motori più discreti del mercato, con livelli sonori misurati.",
+      "current_length": 183,
+      "proposed_description": "Hai bisogno di una scrivania sit-stand silenziosa per l'ufficio open space o il lavoro da casa in famiglia?",
+      "proposed_length": 107,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/comparatifs/migliori-offerte-ufficio-black-friday-2026.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "Black Friday 2026 scrivanie regolabili: le migliori offerte FlexiSpot e alternative. La nostra selezione → Scopri le migliori offerte Black Friday 2026 per le scrivanie sit-stand. FlexiSpot, MAIDeSITe, Fezibo e oltre: sconti fino al -30%.",
+      "current_length": 238,
+      "proposed_description": "Black Friday 2026 scrivanie regolabili: le migliori offerte FlexiSpot e alternative. La nostra selezione.",
+      "proposed_length": 105,
+      "strategy": "arrow_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/comparatifs/bureau-dangle-vs-bureau-droit-2026.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "Scrivania d'angolo o scrivania dritta? Confrontiamo le due configurazioni su spazio, ergonomia, prezzo e utilizzi. Con la nostra tabella comparativa dei migliori modelli 2026.",
+      "current_length": 175,
+      "proposed_description": "Scrivania d'angolo o scrivania dritta? Confrontiamo le due configurazioni su spazio, ergonomia, prezzo e utilizzi.",
+      "proposed_length": 114,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/comparatifs/migliori-bracci-monitor-2026.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "Quale braccio articolato per monitor scegliere? Il nostro comparativo dei 5 migliori bracci per ufficio ergonomico: singolo, doppio, VESA, carico, qualità del movimento.",
+      "current_length": 169,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/comparatifs/bureau-assis-debout-vs-bureau-classique-2026.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "Scrivania sit-stand o scrivania classica? Comparazione completa 2026: salute, produttività, prezzo ed ergonomia. Scoprite quale scrivania scegliere secondo le vostre esigenze.",
+      "current_length": 175,
+      "proposed_description": "Scrivania sit-stand o scrivania classica? Comparazione completa 2026: salute, produttività, prezzo ed ergonomia.",
+      "proposed_length": 112,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/comparatifs/chaise-ergonomique-mal-de-dos-2026.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "Soffri di mal di schiena al lavoro? Scopri la nostra classifica delle 7 migliori sedie ergonomiche selezionate appositamente per alleviare le lombalgie e migliorare la postura.",
+      "current_length": 176,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/comparatifs/miglior-tappetino-scrivania-gaming.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "Aggiorna la tua postazione di lavoro con un tappetino scrivania di alta qualità. Rivediamo le migliori opzioni in feltro, cuoio PU, sughero e microfibra per gamer e professionisti.",
+      "current_length": 180,
+      "proposed_description": "Aggiorna la tua postazione di lavoro con un tappetino scrivania di alta qualità.",
+      "proposed_length": 80,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/comparatifs/migliori-scrivanie-regolabili-2026.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "5 scrivanie sit-stand elettriche testate nel 2026. Stabilità, rumorosità, garanzia: 1 vincitore e i 2 modelli da evitare assolutamente. Selezione rigorosa e test per trovare il modello perfetto.",
+      "current_length": 194,
+      "proposed_description": "5 scrivanie sit-stand elettriche testate nel 2026. Stabilità, rumorosità, garanzia: 1 vincitore e i 2 modelli da evitare assolutamente.",
+      "proposed_length": 135,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/guides/miglior-lampada-scrivania.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "Proteggi gli occhi durante le lunghe sessioni di lavoro con lampade LED senza sfarfallio e a spettro completo. Testiamo i migliori modelli da BenQ, Xiaomi e altri.",
+      "current_length": 163,
+      "proposed_description": "Proteggi gli occhi durante le lunghe sessioni di lavoro con lampade LED senza sfarfallio e a spettro completo.",
+      "proposed_length": 110,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/guides/mal-de-dos-au-bureau-solutions.mdx",
+      "locale": "it",
+      "content_type": "guide",
+      "current_description": "Il 70% dei lavoratori da remoto soffre di dolori alla schiena. Scopri le cause reali del mal di schiena alla scrivania e le soluzioni efficaci — sedia, postura, esercizi.",
+      "current_length": 170,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/guides/sedia-ergonomica-vs-gaming.mdx",
+      "locale": "it",
+      "content_type": "guide",
+      "current_description": "Sedia ergonomica o gaming chair? Confrontiamo comfort, supporto lombare, durabilità e rapporto qualità-prezzo per aiutarti a fare la scelta giusta in base al tuo uso.",
+      "current_length": 166,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/guides/eclairage-led-bureau-guide.mdx",
+      "locale": "it",
+      "content_type": "guide",
+      "current_description": "Lampes de bureau LED, bandeaux lumineux, plafonniers : comparez les technologies, trouvez les meilleurs modèles et éclairez votre espace de travail sans fatigue visuelle.",
+      "current_length": 170,
+      "proposed_description": "Lampes de bureau LED, bandeaux lumineux, plafonniers : comparez les technologies.",
+      "proposed_length": 81,
+      "strategy": "comma_clause_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-it/guides/chaise-ergonomique-vs-gaming.mdx",
+      "locale": "it",
+      "content_type": "guide",
+      "current_description": "Sedia ergonomica o gaming chair? Confrontiamo comfort, supporto lombare, durabilità e rapporto qualità/prezzo per aiutarLa a fare la scelta giusta secondo il Suo utilizzo.",
+      "current_length": 171,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-uk/comparatifs/best-electric-standing-desks-2026.mdx",
+      "locale": "uk",
+      "content_type": "comparatif",
+      "current_description": "Which electric standing desk to choose in 2026? Discover our rigorous selection and testing to find the perfect model, from the most affordable to the most robust.",
+      "current_length": 163,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-uk/comparatifs/meilleure-chaise-ergonomique-teletravail-2026.mdx",
+      "locale": "uk",
+      "content_type": "comparatif",
+      "current_description": "Which ergonomic chair should you choose for remote work? Our selection of the 5 best chairs tested in a home office setting: long-term comfort, video calls, multi-device use.",
+      "current_length": 174,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-uk/comparatifs/ergonomic-chair-lower-back-pain.mdx",
+      "locale": "uk",
+      "content_type": "comparatif",
+      "current_description": "Suffer from lower back pain? An ergonomic chair with proper lumbar support is a must. We tested top chairs from Herman Miller, Steelcase, and more to find the best relief.",
+      "current_length": 171,
+      "proposed_description": "Suffer from lower back pain? An ergonomic chair with proper lumbar support is a must.",
+      "proposed_length": 85,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-uk/comparatifs/meilleure-chaise-ergonomique-moins-300-euros.mdx",
+      "locale": "uk",
+      "content_type": "comparatif",
+      "current_description": "Our selection of the best ergonomic chairs under 300€ tested in real conditions. Lumbar support, breathable mesh, adjustability — no compromise on the essentials.",
+      "current_length": 162,
+      "proposed_description": "Our selection of the best ergonomic chairs under 300€ tested in real conditions.",
+      "proposed_length": 80,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "bureau",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/bureau/content-uk/comparatifs/top-standing-desks-electric-2026.mdx",
+      "locale": "uk",
+      "content_type": "comparatif",
+      "current_description": "Discover our in-depth analysis of the 3 best electric standing desks in 2026: FlexiSpot E7 Pro, IKEA Bekant, and Seville Classics Airlift. Tests, reviews, and buying guide.",
+      "current_length": 172,
+      "proposed_description": "Discover our in-depth analysis of the 3 best electric standing desks in 2026: FlexiSpot E7 Pro, IKEA Bekant, and Seville Classics Airlift.",
+      "proposed_length": 138,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "pixinstant",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/comparatifs/instax-mini-99-vs-mini-11.mdx",
+      "locale": "fr",
+      "content_type": "comparatif",
+      "current_description": "Instax Mini 99 vs Mini 11 : le créatif rétro contre l'entrée de gamme iconique. Notre comparatif 2026 avec prix, modes créatifs et verdict. Voir le meilleur prix sur Amazon →",
+      "current_length": 174,
+      "proposed_description": "Instax Mini 99 vs Mini 11 : le créatif rétro contre l'entrée de gamme iconique. Notre comparatif 2026 avec prix, modes créatifs et verdict.",
+      "proposed_length": 139,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "pixinstant",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/guides/appareil-photo-instantane-waterproof.mdx",
+      "locale": "fr",
+      "content_type": "guide",
+      "current_description": "Guide 2026 : quel appareil photo instantané choisir pour la plage et la piscine ? Étuis étanches, appareils résistants et conseils pour shooter au bord de l'eau sans risque.",
+      "current_length": 173,
+      "proposed_description": "Guide 2026 : quel appareil photo instantané choisir pour la plage et la piscine ? Étuis étanches.",
+      "proposed_length": 97,
+      "strategy": "comma_clause_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "pixinstant",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/guides/top-5-appareils-photo-instantanes-enfants.mdx",
+      "locale": "fr",
+      "content_type": "guide",
+      "current_description": "Les meilleurs appareils photo instants pour enfants en 2026. Tests de robustesse, par age, prix et avis. Instax Mini 12, Mini 11, Mini 99, Instax Pal et Polaroid Go.",
+      "current_length": 165,
+      "proposed_description": "Les meilleurs appareils photo instants pour enfants en 2026. Tests de robustesse, par age, prix et avis.",
+      "proposed_length": 104,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "pixinstant",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/guides/appareil-photo-instantane-hybride.mdx",
+      "locale": "fr",
+      "content_type": "guide",
+      "current_description": "Guide 2026 des appareils photo instantanés hybrides : Instax Mini LiPlay, Mini EVO, Instax Pal et Mini Link. Numérique + tirage physique : le meilleur des deux mondes.",
+      "current_length": 167,
+      "proposed_description": "Guide 2026 des appareils photo instantanés hybrides : Instax Mini LiPlay, Mini EVO, Instax Pal et Mini Link.",
+      "proposed_length": 108,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "pixinstant",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/it/comparatifs/instax-mini-vs-square-2026.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "Instax Mini o Square nel 2026? Confrontiamo i formati, i prezzi delle pellicole, la qualità delle immagini e le fotocamere. Verdetto e link Amazon per scegliere.",
+      "current_length": 161,
+      "proposed_description": "Instax Mini o Square nel 2026? Confrontiamo i formati, i prezzi delle pellicole, la qualità delle immagini e le fotocamere.",
+      "proposed_length": 123,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "pixinstant",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/it/comparatifs/instax-mini-12-vs-mini-40.mdx",
+      "locale": "it",
+      "content_type": "comparatif",
+      "current_description": "Instax Mini 12 vs Mini 40 : confronto 2026. Stessa ottica, design vintage contro look moderno. Scoprite quale scegliere secondo il vostro stile e il vostro budget.",
+      "current_length": 163,
+      "proposed_description": "Instax Mini 12 vs Mini 40 : confronto 2026. Stessa ottica, design vintage contro look moderno.",
+      "proposed_length": 94,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "pixinstant",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/it/guides/appareil-photo-instantane-enfant.mdx",
+      "locale": "it",
+      "content_type": "guide",
+      "current_description": "Quale apparecchio foto istantanea scegliere per un bambino ? La nostra guida per fascia d'età (3-6 anni, 6-10 anni, 10-14 anni, 14+) con raccomandazioni e prezzi.",
+      "current_length": 162,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "pixinstant",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/it/guides/appareil-photo-instantane-waterproof.mdx",
+      "locale": "it",
+      "content_type": "guide",
+      "current_description": "Guida 2026 : quale apparecchio foto istantaneo scegliere per la spiaggia e la piscina ? Custodie impermeabili, apparecchi resistenti e consigli per scattare in riva all'acqua senza rischi.",
+      "current_length": 188,
+      "proposed_description": "Guida 2026 : quale apparecchio foto istantaneo scegliere per la spiaggia e la piscina ?",
+      "proposed_length": 87,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "pixinstant",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/it/guides/top-5-appareils-photo-instantanes-enfants.mdx",
+      "locale": "it",
+      "content_type": "guide",
+      "current_description": "Le migliori fotocamere istantanee per bambini nel 2026. Test di robustezza, per eta, prezzo e opinioni. Instax Mini 12, Mini 11, Mini 99, Instax Pal e Polaroid Go.",
+      "current_length": 163,
+      "proposed_description": "Le migliori fotocamere istantanee per bambini nel 2026. Test di robustezza, per eta, prezzo e opinioni.",
+      "proposed_length": 103,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "pixinstant",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/de/comparatifs/instax-mini-12-vs-mini-11.mdx",
+      "locale": "de",
+      "content_type": "comparatif",
+      "current_description": "Instax Mini 11 vs 12: Vergleich 2026 mit Preis, Fotoqualität und Modi. Entdecken Sie, welches Modell Sie wählen sollten, und kaufen Sie zum besten Preis auf Amazon →",
+      "current_length": 165,
+      "proposed_description": "Instax Mini 11 vs 12: Vergleich 2026 mit Preis. Entdecken Sie, welches Modell Sie wählen sollten, und kaufen Sie zum besten Preis auf Amazon →",
+      "proposed_length": 142,
+      "strategy": "comma_clause_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "pixinstant",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/de/guides/top-5-appareils-photo-instantanes-enfants.mdx",
+      "locale": "de",
+      "content_type": "guide",
+      "current_description": "Die besten Sofortbildkameras für Kinder 2026. Robustheitstests, nach Alter, Preise und Empfehlungen. Instax Mini 12, Mini 11, Mini 99, Instax Pal und Polaroid Go.",
+      "current_length": 162,
+      "proposed_description": "Die besten Sofortbildkameras für Kinder 2026. Robustheitstests, nach Alter, Preise und Empfehlungen.",
+      "proposed_length": 100,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "pixinstant",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/es/comparatifs/meilleur-appareil-photo-instantane-mariage-2026.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "Las 5 mejores cámaras de fotos instantáneas para una boda en 2026: comparativo, presupuestos de películas y consejos sobre el terreno para un libro de visitas inolvidable.",
+      "current_length": 171,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "pixinstant",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/es/comparatifs/polaroid-now-plus-vs-instax-sq1.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "Polaroid Now+ vs Instax SQ1: comparativo 2026 entre los dos reyes del formato cuadrado. Precios, calidad de foto, creatividad y veredicto. Descubre la mejor elección →",
+      "current_length": 167,
+      "proposed_description": "Polaroid Now+ vs Instax SQ1: comparativo 2026 entre los dos reyes del formato cuadrado. Precios, calidad de foto, creatividad y veredicto.",
+      "proposed_length": 138,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "pixinstant",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/es/comparatifs/meilleur-appareil-photo-instantane-moins-50-euros-2026.mdx",
+      "locale": "es",
+      "content_type": "comparatif",
+      "current_description": "¿Existe una buena cámara de fotos instantánea por menos de 50€? Te decimos la verdad sobre los precios 2026 y seleccionamos las 5 mejores opciones de presupuesto.",
+      "current_length": 162,
+      "proposed_description": "Te decimos la verdad sobre los precios 2026 y seleccionamos las 5 mejores opciones de presupuesto.",
+      "proposed_length": 98,
+      "strategy": "redundant_phrase_strip",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "pixinstant",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/es/guides/appareil-photo-instantane-waterproof.mdx",
+      "locale": "es",
+      "content_type": "guide",
+      "current_description": "Guía 2026: qué cámara de fotos instantánea elegir para la playa y la piscina. Fundas estancas, cámaras resistentes y consejos para disparar junto al agua sin riesgo.",
+      "current_length": 165,
+      "proposed_description": null,
+      "proposed_length": null,
+      "strategy": "no_strategy_worked",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "pixinstant",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/es/guides/top-5-appareils-photo-instantanes-enfants.mdx",
+      "locale": "es",
+      "content_type": "guide",
+      "current_description": "Las mejores cámaras de foto instantánea para niños en 2026. Tests de robustez, por edad, precio y opiniones. Instax Mini 12, Mini 11, Mini 99, Instax Pal y Polaroid Go.",
+      "current_length": 168,
+      "proposed_description": "Las mejores cámaras de foto instantánea para niños en 2026. Tests de robustez, por edad, precio y opiniones.",
+      "proposed_length": 108,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    },
+    {
+      "site": "pixinstant",
+      "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/es/guides/appareil-photo-instantane-hybride.mdx",
+      "locale": "es",
+      "content_type": "guide",
+      "current_description": "Guía 2026 de las cámaras de foto instantáneas híbridas: Instax Mini LiPlay, Mini EVO, Instax Pal y Mini Link. Digital + copia física: lo mejor de los dos mundos.",
+      "current_length": 161,
+      "proposed_description": "Guía 2026 de las cámaras de foto instantáneas híbridas: Instax Mini LiPlay, Mini EVO, Instax Pal y Mini Link.",
+      "proposed_length": 109,
+      "strategy": "sentence_drop",
+      "rule_chain": [
+        "redundant_phrase_strip",
+        "arrow_drop",
+        "sentence_drop",
+        "comma_clause_drop"
+      ]
+    }
+  ]
+}
