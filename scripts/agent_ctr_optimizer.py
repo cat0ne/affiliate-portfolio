@@ -610,10 +610,24 @@ def run_site(
     candidates = find_low_ctr_pages(site_slug, min_impressions=min_impressions, top_n=max_proposals * 2)
     print(f"  → {site_slug}: {len(candidates)} low-CTR candidate(s)")
     proposals: list[dict[str, Any]] = []
+    skipped_no_mdx = 0
     for c in candidates[:max_proposals]:
         mdx = _find_mdx_for_url(site_slug, c["page_path"])
-        meta = _read_meta(mdx) if mdx else {}
-        current_title = meta.get("title", "") or _slug_from_url(c["page_path"]).replace("-", " ")
+        if mdx is None:
+            # No MDX backs this URL — likely a homepage (`/en/`), category index,
+            # or other framework-rendered page. The slug-as-title fallback used
+            # to emit nonsense proposals like `current_title="en"` → variant
+            # `"7 Best En for 2026 (Tested & Compared)"`. Skip cleanly.
+            skipped_no_mdx += 1
+            continue
+        meta = _read_meta(mdx)
+        current_title = meta.get("title", "")
+        if not current_title:
+            # MDX exists but title couldn't be parsed (rare malformed frontmatter)
+            # — still skip rather than fall back to slug-as-title, since the slug
+            # rarely makes a good comparison baseline for variant scoring.
+            skipped_no_mdx += 1
+            continue
         slug = _slug_from_url(c["page_path"])
         site_default = SITES.get(site_slug, {}).get("default_locale", "fr")
         locale = _detect_locale_from_url(c["page_path"], site_default=site_default)
@@ -664,7 +678,14 @@ def run_site(
                 priority=3,
                 target_agent="agent-cro-optimizer",
             )
-    return {"site": site_slug, "candidates": len(candidates), "proposals": proposals}
+    if skipped_no_mdx:
+        print(f"     ({skipped_no_mdx} candidate(s) skipped — no MDX backing the URL)")
+    return {
+        "site": site_slug,
+        "candidates": len(candidates),
+        "proposals": proposals,
+        "skipped_no_mdx": skipped_no_mdx,
+    }
 
 
 def write_report(per_site: dict[str, dict[str, Any]], dry_run: bool) -> Path:

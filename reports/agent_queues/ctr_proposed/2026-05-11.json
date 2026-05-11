@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-11T13:35:54.672897Z",
+  "generated_at": "2026-05-11T14:54:38.900927Z",
   "agent": "agent-ctr-optimizer",
   "sites": {
     "aspirateur": [
@@ -68,9 +68,9 @@
           },
           {
             "name": "llm",
-            "title": "Dreame L10s Ultra Review 2026: Tested vs Roborock (Save €300)",
-            "score": 8.0,
-            "length": 61
+            "title": "Dreame L10s Ultra Review 2026: Tested vs Roborock (Winner?)",
+            "score": 9.0,
+            "length": 59
           }
         ],
         "recommended": {
@@ -133,60 +133,13 @@
     "matelas": [
       {
         "site": "matelas",
-        "page_path": "https://www.matelas-expert.fr/en/",
-        "slug": "en",
-        "locale": "en",
-        "content_type": "",
-        "mdx_path": null,
-        "current_title": "en",
-        "current_title_score": 3.5,
-        "current_ctr": 0.0046,
-        "expected_ctr": 0.035,
-        "position": 7.0,
-        "impressions": 1530,
-        "opportunity_clicks": 46,
-        "variants": [
-          {
-            "name": "number_year",
-            "title": "7 Best En for 2026 (Tested & Compared)",
-            "score": 8.5,
-            "length": 38
-          },
-          {
-            "name": "llm",
-            "title": "Best Mattresses 2026 – Expert Reviews & Buying Guide",
-            "score": 8.5,
-            "length": 52
-          },
-          {
-            "name": "question",
-            "title": "Which en Is Worth It in 2026? Honest Review",
-            "score": 7.5,
-            "length": 43
-          },
-          {
-            "name": "power_word",
-            "title": "Ultimate En Buyer's Guide (2026, Tested)",
-            "score": 7.5,
-            "length": 40
-          }
-        ],
-        "recommended": {
-          "name": "number_year",
-          "title": "7 Best En for 2026 (Tested & Compared)",
-          "score": 8.5,
-          "length": 38
-        }
-      },
-      {
-        "site": "matelas",
         "page_path": "https://www.matelas-expert.fr/en/test/test-morphea-jade/",
         "slug": "test-morphea-jade",
         "locale": "en",
         "content_type": "test",
         "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-en/tests/test-morphea-jade.mdx",
-        "current_title": "Morphea Jade Test 2026: 100 Nights | French Craftsmanship Worth €899?",
-        "current_title_score": 6.5,
+        "current_title": "Morphea Jade Test 2026: French Craftsmanship Worth €899?",
+        "current_title_score": 8.0,
         "current_ctr": 0.0034,
         "expected_ctr": 0.08,
         "position": 4.2,
@@ -207,9 +160,9 @@
           },
           {
             "name": "llm",
-            "title": "Morphea Jade Mattress Review 2026: Worth €899? We Tested It",
-            "score": 9.0,
-            "length": 59
+            "title": "Morphea Jade Review 2026: Is French Luxury Worth It?",
+            "score": 8.0,
+            "length": 52
           }
         ],
         "recommended": {
@@ -226,8 +179,8 @@
         "locale": "en",
         "content_type": "test",
         "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-en/tests/test-epeda-echappee.mdx",
-        "current_title": "Épéda L'Échappée Test 2026: 100 Nights | What Reviews Don't Say",
-        "current_title_score": 6.5,
+        "current_title": "Épéda L'Échappée Test 2026: 100 Nights",
+        "current_title_score": 6.0,
         "current_ctr": 0.0085,
         "expected_ctr": 0.08,
         "position": 3.9,
@@ -248,9 +201,9 @@
           },
           {
             "name": "llm",
-            "title": "Épéda L'Échappée Review 2026: Honest Test After 100 Nights",
+            "title": "Épéda L'Échappée Review 2026: Tested & Rated by Experts",
             "score": 8.5,
-            "length": 58
+            "length": 55
           }
         ],
         "recommended": {
@@ -267,7 +220,7 @@
         "locale": "en",
         "content_type": "test",
         "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-en/tests/test-emma-original.mdx",
-        "current_title": "Emma Original Review 2026: 100-Night Test | 3 Flaws Sellers Hide",
+        "current_title": "Emma Original Review 2026: 3 Flaws Sellers Hide",
         "current_title_score": 7.5,
         "current_ctr": 0.0,
         "expected_ctr": 0.028,
@@ -289,9 +242,9 @@
           },
           {
             "name": "llm",
-            "title": "Emma Original Review 2026: 100-Night Test Reveals 3 Hidden Flaws",
-            "score": 7.5,
-            "length": 64
+            "title": "Emma Original Mattress Review 2026: 3 Hidden Flaws Exposed",
+            "score": 8.5,
+            "length": 58
           }
         ],
         "recommended": {
@@ -371,9 +324,9 @@
           },
           {
             "name": "llm",
-            "title": "Best Mattresses for Back Pain 2026: 7 Expert-Tested Picks",
+            "title": "Best Mattresses for Back Pain 2026: 7 Tested & Reviewed",
             "score": 9.5,
-            "length": 57
+            "length": 55
           },
           {
             "name": "question",
@@ -449,8 +402,8 @@
         "locale": "en",
         "content_type": "avis",
         "mdx_path": "/Users/gho/Documents/affiliation-sites/matelas/content-en/avis/tediber.mdx",
-        "current_title": "Tediber Review: Our Opinion on the French Brand",
-        "current_title_score": 5.5,
+        "current_title": "Tediber Mattress Review 2026: Tested & Rated by Experts",
+        "current_title_score": 8.5,
         "current_ctr": 0.0,
         "expected_ctr": 0.06,
         "position": 4.8,
@@ -459,9 +412,9 @@
         "variants": [
           {
             "name": "llm",
-            "title": "Tediber Mattress Review 2026: Tested & Rated by Experts",
+            "title": "Tediber Mattress Review 2026: Honest Expert Verdict",
             "score": 8.5,
-            "length": 55
+            "length": 51
           },
           {
             "name": "question",
@@ -476,12 +429,7 @@
             "length": 45
           }
         ],
-        "recommended": {
-          "name": "llm",
-          "title": "Tediber Mattress Review 2026: Tested & Rated by Experts",
-          "score": 8.5,
-          "length": 55
-        }
+        "recommended": null
       },
       {
         "site": "matelas",
@@ -512,7 +460,7 @@
           },
           {
             "name": "llm",
-            "title": "Meilleur Oreiller Mémoire de Forme 2026 : Comparatif & Avis",
+            "title": "Meilleur Oreiller Mémoire de Forme 2026 : Avis & Comparatif",
             "score": 7.5,
             "length": 59
           },
@@ -646,9 +594,9 @@
           },
           {
             "name": "llm",
-            "title": "Is Your Instax Film Expired? 5 Warning Signs (2026 Guide)",
+            "title": "Is Your Instax Film Expired? 5 Warning Signs (2026)",
             "score": 9.0,
-            "length": 57
+            "length": 51
           },
           {
             "name": "question",
@@ -671,8 +619,8 @@
         "locale": "en",
         "content_type": "comparatif",
         "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/en/comparatifs/instax-vs-polaroid-2026.mdx",
-        "current_title": "Instax vs Polaroid 2026: Full Comparison | Film Price, Format & Quality",
-        "current_title_score": 6.0,
+        "current_title": "Instax vs Polaroid 2026: Full Comparison & Film Price",
+        "current_title_score": 7.5,
         "current_ctr": 0.0,
         "expected_ctr": 0.045,
         "position": 6.5,
@@ -718,7 +666,7 @@
         "locale": "en",
         "content_type": "comparatif",
         "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/en/comparatifs/instax-mini-12-vs-mini-11.mdx",
-        "current_title": "Instax Mini 12 vs 11 (2026): 7 Real Differences | Which to Buy?",
+        "current_title": "Instax Mini 12 vs 11 (2026): 7 Real Differences",
         "current_title_score": 9.0,
         "current_ctr": 0.0032,
         "expected_ctr": 0.018,
@@ -746,9 +694,9 @@
           },
           {
             "name": "llm",
-            "title": "Instax Mini 12 vs 11: Which Should You Actually Buy? (2026)",
+            "title": "Instax Mini 12 vs 11: Which Should You Buy in 2026?",
             "score": 9.0,
-            "length": 59
+            "length": 51
           }
         ],
         "recommended": {
@@ -774,12 +722,6 @@
         "opportunity_clicks": 13,
         "variants": [
           {
-            "name": "llm",
-            "title": "Best Instax Mini 2026: Mini 12 vs 11 vs 99 (We Tested All 3)",
-            "score": 10.0,
-            "length": 60
-          },
-          {
             "name": "number_year",
             "title": "7 Best Instax Mini for 2026 (Tested & Compared)",
             "score": 9.0,
@@ -792,18 +734,19 @@
             "length": 52
           },
           {
+            "name": "llm",
+            "title": "Best Instax Mini 2026: We Tested Mini 12 vs 11 vs 99 (Winner)",
+            "score": 9.0,
+            "length": 61
+          },
+          {
             "name": "power_word",
             "title": "Ultimate Instax Mini Buyer's Guide (2026, Tested)",
             "score": 8.0,
             "length": 49
           }
         ],
-        "recommended": {
-          "name": "llm",
-          "title": "Best Instax Mini 2026: Mini 12 vs 11 vs 99 (We Tested All 3)",
-          "score": 10.0,
-          "length": 60
-        }
+        "recommended": null
       },
       {
         "site": "pixinstant",
@@ -812,8 +755,8 @@
         "locale": "en",
         "content_type": "guide",
         "mdx_path": "/Users/gho/Documents/affiliation-sites/pixinstant/content/en/guides/instax-mini-12-film-guide.mdx",
-        "current_title": "Instax Mini 12 Film Guide 2026: Price, Where to Buy & Money-Saving Tips",
-        "current_title_score": 7.0,
+        "current_title": "Instax Mini 12 Film 2026: Price, Where to Buy, Money-Saving",
+        "current_title_score": 8.5,
         "current_ctr": 0.0,
         "expected_ctr": 0.022,
         "position": 9.1,
@@ -834,9 +777,9 @@
           },
           {
             "name": "llm",
-            "title": "Instax Mini 12 Film: Where to Buy Cheap in 2026",
-            "score": 7.5,
-            "length": 47
+            "title": "Instax Mini 12 Film: Best Prices & Where to Buy (2026)",
+            "score": 10.0,
+            "length": 54
           }
         ],
         "recommended": {
