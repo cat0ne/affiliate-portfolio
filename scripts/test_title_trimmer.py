@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from agent_title_trimmer import (
     MIN_LEN, TITLE_LIMIT,
     _hook_loss, _hooks_in, _score_candidate,
+    _slug_entities, _try_dash_drop,
     _validate_gemini_output, trim_title,
 )
 
@@ -161,6 +162,71 @@ def test_signal_retention_floor():
     # case would escalate, but we don't test Gemini calls in this suite.
 
 
+def test_slug_entities_strips_filler():
+    """Verbs/articles/superlatives get filtered; proper nouns survive."""
+    # Just check that brand/entity tokens survive — not exact membership
+    cases = [
+        ("test-emma-original", {"emma", "original"}),
+        ("meilleur-matelas-tediber", {"tediber"}),
+        ("instax-mini-12-vs-mini-11", {"instax", "mini"}),
+    ]
+    for slug, must_contain in cases:
+        out = set(_slug_entities(slug))
+        assert must_contain.issubset(out), (
+            f"FAIL: {slug} expected to retain {must_contain}, got {out}"
+        )
+        # Filler words must NOT survive
+        for filler in ("test", "meilleur", "vs", "best", "the", "le"):
+            assert filler not in out, f"FAIL: filler {filler!r} survived in {slug} → {out}"
+    print("✓ slug entity extraction filters filler tokens, keeps proper nouns")
+
+
+def test_validator_uses_slug_entities_when_first_word_is_verb():
+    """Old validator rejected this; new one accepts (slug carries entity)."""
+    # Original starts with "Wie" (verb "how" in German) — old validator
+    # would require "Wie" in output. Slug has "bettdecke" entity.
+    ok, reason = _validate_gemini_output(
+        "Wie man sein Bettdecke wählt: Füllgewicht, Material und Jahreszeit",
+        "Bettdecke wählen 2026: Füllgewicht und Material",
+        slug="comment-choisir-bettdecke",
+    )
+    assert ok, f"FAIL: should accept entity-preserving rewrite, got: {reason}"
+    print("✓ validator with slug accepts entity-preserving rewrites that drop the first verb")
+
+
+def test_validator_rejects_entity_loss_via_slug():
+    """If slug entity is missing from output, reject."""
+    ok, reason = _validate_gemini_output(
+        "Test Emma Original 2026: 100 Nights of Sleep",
+        "100 Nights Mattress Review 2026: Our Verdict",  # drops "emma" + "original"
+        slug="test-emma-original",
+    )
+    assert not ok, "FAIL: should reject — slug entities lost"
+    assert reason.startswith("entity_lost"), f"unexpected reason: {reason}"
+    print("✓ validator rejects when slug entities lost from output")
+
+
+def test_dash_drop_handles_em_dash_and_hyphen():
+    """Many FR titles use ' - ' or ' — ' instead of pipe."""
+    cases = [
+        "Les Meilleures Promos Matelas Black Friday 2026 - Notre Sélection",
+        "Die besten Matratzen-Black-Friday-Angebote 2026 — Unsere Auswahl",
+    ]
+    for c in cases:
+        result = _try_dash_drop(c)
+        assert result is not None, f"FAIL: dash_drop should trim {c!r}"
+        assert len(result) <= TITLE_LIMIT
+        assert MIN_LEN <= len(result)
+    print(f"✓ dash_drop handles ' - ' and ' — ' separators")
+
+
+def test_dash_drop_only_separator_not_compounds():
+    """Compound words use bare hyphen — shouldn't trigger dash_drop."""
+    # No surrounding spaces around the hyphen → not a separator
+    assert _try_dash_drop("Matratzen-Black-Friday-Angebote 2026") is None
+    print(f"✓ dash_drop ignores compound-word hyphens")
+
+
 def test_hook_loss_set():
     original = "Morphea Jade Test 2026: 100 Nights | French Craftsmanship Worth €899?"
     pipe_drop = "Morphea Jade Test 2026: 100 Nights"
@@ -205,6 +271,11 @@ if __name__ == "__main__":
         test_score_penalizes_hook_loss,
         test_score_penalizes_year_loss,
         test_signal_retention_floor,
+        test_slug_entities_strips_filler,
+        test_validator_uses_slug_entities_when_first_word_is_verb,
+        test_validator_rejects_entity_loss_via_slug,
+        test_dash_drop_handles_em_dash_and_hyphen,
+        test_dash_drop_only_separator_not_compounds,
         test_hook_loss_set,
         test_colon_drop_with_floor,
         test_fully_unsplittable_falls_through,

@@ -223,6 +223,20 @@ def _try_colon_drop(title: str) -> Optional[str]:
     return head
 
 
+def _try_dash_drop(title: str) -> Optional[str]:
+    """Drop trailing clause after a `-` or `—` separator.
+
+    Many FR/DE titles use `Notre Sélection - 2026` style instead of pipe.
+    Mirror pipe_drop semantics.
+    """
+    for sep in (" — ", " - ", " – "):
+        if sep in title:
+            head = title.rsplit(sep, 1)[0].rstrip()
+            if _acceptable(head):
+                return head
+    return None
+
+
 def _try_boilerplate_strip(title: str) -> Optional[str]:
     candidate = title
     for pattern in BOILERPLATE_SUFFIXES:
@@ -312,7 +326,38 @@ def _score_candidate(candidate: str, original: str) -> float:
     return round(score, 2)
 
 
-def _validate_gemini_output(original: str, candidate: str) -> tuple[bool, str]:
+# Filler tokens to strip when deriving entity candidates from a slug.
+# Verbs/articles/generic nouns the brand entity isn't.
+_SLUG_FILLER = {
+    "test", "tests", "review", "reviews", "guide", "guides", "comparatif",
+    "comparatifs", "avis", "best", "top", "the", "le", "la", "les", "un",
+    "une", "vs", "de", "du", "des", "der", "die", "das", "el", "los", "las",
+    "il", "lo", "i", "gli", "para", "pour", "for", "buy", "comparison",
+    "meilleur", "meilleure", "meilleurs", "meilleures",
+}
+
+
+def _slug_entities(slug: str) -> list[str]:
+    """Extract entity-candidate tokens from a slug.
+
+    Filters out filler verbs/articles. Empty result is possible — caller
+    should fall back to first-token logic when this returns [].
+
+    Example: 'test-emma-original' → ['emma', 'original']
+             'meilleur-matelas-tediber' → ['matelas', 'tediber']
+             'comment-choisir-son-oreiller' → ['choisir', 'son', 'oreiller']
+    """
+    if not slug:
+        return []
+    tokens = [t.lower() for t in re.split(r"[-_/]", slug) if t and not t.isdigit()]
+    return [t for t in tokens if t not in _SLUG_FILLER]
+
+
+def _validate_gemini_output(
+    original: str,
+    candidate: str,
+    slug: Optional[str] = None,
+) -> tuple[bool, str]:
     """Reject candidates that hallucinate years or drop the entity.
 
     Live run on 2026-05-11 observed Gemini rewriting `Seniorenmatratze ...
@@ -329,12 +374,23 @@ def _validate_gemini_output(original: str, candidate: str) -> tuple[bool, str]:
     out_years = set(re.findall(r"\b(20\d{2})\b", candidate))
     if in_years and not in_years & out_years:
         return False, f"year_drift:{in_years}->{out_years}"
-    # Entity preservation: at least the first alphabetic token of original must survive
-    # (case-insensitive). This catches "Tediber Review" → "Mattress Review" type drift.
+    # Entity preservation. Old approach: require first alphabetic token to
+    # survive. That rejected valid rewrites when the first word is a verb
+    # ("Wie", "Allestire", "Comment") or article. New approach: if the
+    # caller supplies the slug, derive entity candidates from it (more
+    # reliable proper-noun source) and require at least one to survive.
+    # Fall back to first-token logic only when no slug is available.
+    out_lower = candidate.lower()
+    if slug:
+        entities = _slug_entities(slug)
+        if entities:
+            if not any(e in out_lower for e in entities):
+                return False, f"entity_lost:{entities[0]}"
+            return True, ""
     in_tokens = re.findall(r"[A-Za-zÀ-ÿ]+", original)
     if in_tokens:
         first = in_tokens[0]
-        if first.lower() not in candidate.lower():
+        if first.lower() not in out_lower:
             return False, f"entity_lost:{first}"
     return True, ""
 
@@ -343,6 +399,7 @@ def _try_gemini_trim(
     title: str,
     locale: str,
     hooks_to_keep: Optional[set] = None,
+    slug: Optional[str] = None,
 ) -> Optional[str]:
     if not GEMINI_API_KEY:
         return None
@@ -403,7 +460,7 @@ def _try_gemini_trim(
         if not parts:
             return None
         text = parts[0].get("text", "").strip().strip('"\'')
-        ok, reason = _validate_gemini_output(title, text)
+        ok, reason = _validate_gemini_output(title, text, slug=slug)
         if not ok:
             print(f"  ⚠️  Gemini output rejected ({reason}): {text!r}", file=sys.stderr)
             return None
@@ -417,6 +474,7 @@ def trim_title(
     title: str,
     locale: str,
     use_gemini: bool = False,
+    slug: Optional[str] = None,
 ) -> tuple[Optional[str], str, list[str]]:
     """Return (proposed, strategy, rule_chain).
 
@@ -439,6 +497,7 @@ def trim_title(
         ("boilerplate", _try_boilerplate_strip),
         ("paren_drop", _try_paren_drop),
         ("pipe_drop", _try_pipe_drop),
+        ("dash_drop", _try_dash_drop),
         ("colon_drop", _try_colon_drop),
     ]:
         chain.append(name)
@@ -475,7 +534,7 @@ def trim_title(
         chain.append("gemini")
         # Tell Gemini what hooks it must keep
         lost_in_best = _hook_loss(title, best_rule[1]) if best_rule else _hooks_in(title)
-        g = _try_gemini_trim(title, locale, hooks_to_keep=lost_in_best)
+        g = _try_gemini_trim(title, locale, hooks_to_keep=lost_in_best, slug=slug)
         if g:
             gemini_candidate = (g, _score_candidate(g, title))
 
@@ -512,7 +571,10 @@ def run(
             if len(title) <= TITLE_LIMIT:
                 continue
             over_limit_count += 1
-            proposed, strategy, chain = trim_title(title, locale, use_gemini=use_gemini)
+            slug = meta.get("slug") or Path(mdx).stem
+            proposed, strategy, chain = trim_title(
+                title, locale, use_gemini=use_gemini, slug=slug,
+            )
             proposals.append(TitleProposal(
                 site=site,
                 mdx_path=str(mdx),
