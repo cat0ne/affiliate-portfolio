@@ -97,6 +97,47 @@ The cohort 2 review surfaced gaps in the original critic. Added in `scripts/agen
 
 Test suite: `scripts/test_title_trimmer.py` — 16/16 pass.
 
+## Cohort 2026-05-11 (cohort 3, n=21) — locale extension
+
+Extends cohorts 1+2 (EN-only) to the FR/DE/ES/IT translations of the same product pages. Same change-date 2026-05-11.
+
+| Site | Page | Change type | Locale | Old len | New len |
+|---|---|---|---|---|---|
+| matelas | `/test/test-morphea-jade/` | trim-gemini | fr | 68 | 48 |
+| matelas | `/comparatif/meilleurs-matelas-moins-de-500-euros/` | trim-rule | fr | 63 | 46 |
+| matelas | `/comparatif/meilleur-matelas-tediber/` | trim-rule | fr | 69 | 52 |
+| matelas | `/de/test/test-emma-original/` | trim-gemini | de | 71 | 60 |
+| matelas | `/de/test/test-morphea-jade/` | trim-gemini | de | 62 | 57 |
+| matelas | `/de/comparatif/meilleurs-matelas-moins-de-500-euros/` | trim-rule | de | 70 | 53 |
+| matelas | `/de/comparatif/meilleur-matelas-tediber/` | trim-rule | de | 67 | 50 |
+| matelas | `/es/test/test-emma-original/` | trim-gemini | es | 67 | 45 |
+| matelas | `/es/comparatif/meilleurs-matelas-moins-de-500-euros/` | trim-rule | es | 65 | 48 |
+| matelas | `/es/comparatif/meilleur-matelas-tediber/` | trim-rule | es | 68 | 51 |
+| matelas | `/it/test/test-emma-original/` | trim-gemini | it | 68 | 44 |
+| matelas | `/it/comparatif/meilleurs-matelas-moins-de-500-euros/` | trim-rule | it | 65 | 48 |
+| matelas | `/it/comparatif/meilleur-matelas-tediber/` | trim-rule | it | 76 | 59 |
+| bureau | `/de/comparatif/vs/flexispot-e7-vs-flexispot-e7-pro/` | trim-gemini | de | 69 | 57 |
+| pixinstant | `/comparatif/instax-mini-12-vs-mini-11/` | trim-rule | fr | 66 | 53 |
+| pixinstant | `/comparatif/polaroid-now-gen2-vs-instax-mini-12/` | trim-gemini | fr | 73 | 55 |
+| pixinstant | `/it/comparatif/meilleur-instax-mini-2026/` | trim-rule | it | 61 | 48 |
+| pixinstant | `/it/comparatif/polaroid-now-gen2-vs-instax-mini-12/` | trim-gemini | it | 67 | 54 |
+| pixinstant | `/de/comparatif/instax-mini-12-vs-mini-11/` | trim-rule | de | 73 | 60 |
+| pixinstant | `/es/comparatif/instax-mini-12-vs-mini-11/` | trim-rule | es | 62 | 49 |
+| pixinstant | `/es/comparatif/polaroid-now-gen2-vs-instax-mini-12/` | trim-gemini | es | 69 | 51 |
+
+**Excluded from cohort 3** (self-critic rejection): pixinstant `/de/comparatif/polaroid-now-gen2-vs-instax-mini-12/` — rule trim landed at 36 chars dropping the "Welche Sofortbildkamera?" CTA that's the page's main differentiator. Kept in queue for manual review.
+
+Cohort 3 composition: 13 rule-based + 8 Gemini self-critic escalations.
+Locale mix: 3 FR + 6 DE + 5 ES + 5 IT + 2 FR-pixinstant.
+
+**Measurement note**: cohort 3 pages have lower individual impression volumes than cohort 1+2 (these are non-EN locales of the same products; EN dominates impressions on these sites). Cohort 3 is best treated as a **cohort-level signal** at T+28 rather than per-URL.
+
+## Combined cohort totals (cohorts 1+2+3)
+
+- **42 changes** across 4 sites (matelas 21, pixinstant 16, aspirateur 3, bureau 2)
+- 22 trim-rule + 17 trim-gemini + 1 CTR-variant + 2 excluded by self-critic
+- All EN versions of these 4 product pages now ≤60 chars; FR/DE/ES/IT versions also ≤60 chars (with the 1 documented exclusion)
+
 ## Exclusions
 
 - Brewmance: canonical recovery window through 2026-06-07 — re-evaluate after.
