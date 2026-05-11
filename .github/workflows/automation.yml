@@ -147,11 +147,18 @@ jobs:
         continue-on-error: true
         run: python scripts/agent_syndication.py --daily --max 5
 
-      - name: Run CTR optimizer (low-CTR meta variants)
-        continue-on-error: true
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python scripts/agent_ctr_optimizer.py --daily --max 10 --min-impressions 200
+      # CTR optimizer PAUSED 2026-05-11: emitted EN listicle titles on FR pages
+      # and on single-product test pages ("7 Best Emma Original for 2026...").
+      # Re-enable only after guardrails in scripts/agent_ctr_optimizer.py:
+      #   1. locale detection — reject EN templates on non-EN [locale]
+      #   2. content-type detection — block listicle templates on guide/ + test/
+      #   3. human-in-loop queue — write proposals to reports/agent_queues/ctr_proposed/,
+      #      never edit MDX directly
+      # - name: Run CTR optimizer (low-CTR meta variants)
+      #   continue-on-error: true
+      #   env:
+      #     ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      #   run: python scripts/agent_ctr_optimizer.py --daily --max 10 --min-impressions 200
 
       - name: Run CRO optimizer consumer (apply CTR meta + ASIN events)
         continue-on-error: true
