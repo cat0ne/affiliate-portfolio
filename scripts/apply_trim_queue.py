@@ -55,19 +55,128 @@ BLOCK_SCALAR_INDICATORS = (">-", ">", "|", "|-")
 # Cohort markdown parser
 # ---------------------------------------------------------------------------
 
-# Backticked path-like tokens. Accepts `/en/foo/bar/`, `/comparatif/x/`,
-# `/comparatif/x/ (FR)` (parenthetical suffix is allowed and discarded), with
-# or without trailing slash, optional `#anchor`.
-_BACKTICK_PATH_RE = re.compile(r"`(/[^`\s]+)`")
+# Backticked path inside a markdown table cell. Used after we've isolated the
+# Page column value — we then extract the (first) backticked `/path/` token.
+# A cell may have trailing narrative outside the backticks (e.g. ` (FR)`).
+_CELL_BACKTICK_PATH_RE = re.compile(r"`(/[^`\s]+)`")
+
+# Markdown table separator row: `|---|---|...|` with optional whitespace and
+# optional alignment colons (`:---`, `---:`, `:---:`). One or more cells.
+_TABLE_SEPARATOR_RE = re.compile(r"^\s*\|?\s*(?::?-{3,}:?\s*\|\s*)+(?::?-{3,}:?)?\s*\|?\s*$")
+
+
+def _split_row(line: str) -> list[str]:
+    """Split a markdown table row into cell values.
+
+    Strips the leading/trailing pipe and whitespace on each cell. Empty
+    leading/trailing cells (from outer pipes) are dropped.
+    """
+    stripped = line.strip()
+    if not stripped.startswith("|"):
+        return []
+    # Drop leading and trailing pipe before splitting so we don't get
+    # phantom empty cells at the ends.
+    inner = stripped[1:]
+    if inner.endswith("|"):
+        inner = inner[:-1]
+    return [cell.strip() for cell in inner.split("|")]
+
+
+def _is_table_row(line: str) -> bool:
+    """True if line looks like a markdown table row (starts with `|`)."""
+    return line.lstrip().startswith("|")
+
+
+def _is_separator_row(line: str) -> bool:
+    return bool(_TABLE_SEPARATOR_RE.match(line))
+
+
+def _slug_from_cell(cell: str) -> str | None:
+    """Extract the URL slug from a Page-column cell value.
+
+    The cell looks like `` `/en/avis/tediber/` `` (optionally followed by
+    narrative such as ` (FR)`). We grab the first backticked `/path/` token,
+    strip anchors/queries/trailing slash, and return the last non-empty
+    segment.
+    """
+    match = _CELL_BACKTICK_PATH_RE.search(cell)
+    if match is None:
+        return None
+    raw = match.group(1)
+    raw = raw.split("#", 1)[0]
+    raw = raw.split("?", 1)[0]
+    raw = raw.rstrip("/")
+    if not raw:
+        return None
+    segments = [s for s in raw.split("/") if s]
+    if not segments:
+        return None
+    return segments[-1]
+
+
+def _strip_html_comments(text: str) -> str:
+    """Remove HTML/MDX comment blocks so commented-out tables aren't parsed."""
+    return re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
+
+
+def _iter_cohort_tables(text: str) -> Iterable[list[list[str]]]:
+    """Yield each cohort table as a list of body rows (each row = list of cells).
+
+    A cohort table is identified by:
+      1. A header row that is `|`-delimited AND contains both a ``Page`` cell
+         and a ``Change type`` cell (case-insensitive).
+      2. Immediately followed by a canonical separator row (``|---|---|...|``).
+
+    Body rows are subsequent `|`-delimited lines until the first non-table
+    line (blank, heading, narrative). The yielded value is the list of body
+    rows mapped through the Page column index — i.e., already projected to
+    the Page cell text only.
+    """
+    cleaned = _strip_html_comments(text)
+    lines = cleaned.splitlines()
+    i = 0
+    n = len(lines)
+    while i < n:
+        line = lines[i]
+        if _is_table_row(line):
+            header_cells = _split_row(line)
+            # Case-insensitive matching of column names; trim cell whitespace.
+            lower = [c.lower() for c in header_cells]
+            has_page = "page" in lower
+            has_change_type = "change type" in lower
+            sep_ok = (i + 1 < n) and _is_separator_row(lines[i + 1])
+            if has_page and has_change_type and sep_ok:
+                page_idx = lower.index("page")
+                body: list[list[str]] = []
+                j = i + 2
+                while j < n and _is_table_row(lines[j]):
+                    cells = _split_row(lines[j])
+                    if cells:
+                        body.append(cells)
+                    j += 1
+                # Project to Page column only (defensive against short rows).
+                projected = [
+                    [row[page_idx]] for row in body if len(row) > page_idx
+                ]
+                yield projected
+                i = j
+                continue
+        i += 1
 
 
 def parse_applied_slugs(md_path: Path) -> set[str]:
     """Parse a cohort markdown log and return the set of applied slugs.
 
-    The cohort markdown has multiple tables with slightly different schemas
-    (cohort 1, 2, 3, 4 each have a different column layout). To stay robust
-    we don't parse columns — we extract every backticked path token, strip
-    anchors and trailing slashes, and take the last non-empty segment.
+    The cohort markdown has multiple tables with slightly different column
+    layouts (cohort 1, 2, 3, 4 each have a different schema). This parser
+    is *column-aware*: it identifies cohort tables by their header row
+    (must contain both ``Page`` and ``Change type``) followed by a canonical
+    markdown separator row (``|---|---|...|``), then extracts the slug only
+    from the ``Page`` column of body rows.
+
+    Backticked path tokens elsewhere in the markdown (narrative text, code
+    references, non-cohort tables) are ignored — they cannot pollute the
+    exclusion list.
 
     Returns an empty set if the file is missing (with a stderr warning so
     callers don't silently apply over an already-cohorted slug).
@@ -77,24 +186,12 @@ def parse_applied_slugs(md_path: Path) -> set[str]:
         return set()
     text = md_path.read_text(encoding="utf-8")
     slugs: set[str] = set()
-    for match in _BACKTICK_PATH_RE.finditer(text):
-        raw = match.group(1)
-        # strip anchor
-        raw = raw.split("#", 1)[0]
-        # strip query
-        raw = raw.split("?", 1)[0]
-        # normalise trailing slash
-        raw = raw.rstrip("/")
-        if not raw:
-            continue
-        segments = [s for s in raw.split("/") if s]
-        if not segments:
-            continue
-        slug = segments[-1]
-        # cohort markdown sometimes has trailing parenthetical like ` (FR)`
-        # that ends up outside the backticks — we don't need to handle that
-        # here because backticks already bound the token.
-        slugs.add(slug)
+    for table in _iter_cohort_tables(text):
+        for row in table:
+            cell = row[0] if row else ""
+            slug = _slug_from_cell(cell)
+            if slug:
+                slugs.add(slug)
     return slugs
 
 

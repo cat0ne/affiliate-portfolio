@@ -129,6 +129,161 @@ class TestCohortMarkdownParser(unittest.TestCase):
         slugs = atq.parse_applied_slugs(Path("/nonexistent/path.md"))
         self.assertEqual(slugs, set())
 
+    def test_cohort_parser_extracts_only_page_column(self):
+        """Backticked paths outside cohort tables must NOT pollute the slug set."""
+        md = (
+            "# Notes\n\n"
+            "See discussion of `/some/unrelated/narrative-path/` in the prose "
+            "and the file `/etc/another-bogus-path/` referenced inline.\n\n"
+            "Also a non-cohort listing:\n\n"
+            "- old link: `/legacy/dropped-page/`\n\n"
+            "## Cohort 2026-05-11 (n=2)\n\n"
+            "| Site | Page | Change type | Locale | Old | New |\n"
+            "|---|---|---|---|---|---|\n"
+            "| matelas | `/en/avis/tediber/` | trim-rule | en | 50 | 40 |\n"
+            "| pixinstant | `/en/comparatif/foo-bar/` | trim-gemini | en | 60 | 45 |\n\n"
+            "Postscript: see `/post/another-path/` for the reasoning.\n"
+        )
+        with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False, encoding="utf-8") as fp:
+            fp.write(md)
+            path = Path(fp.name)
+        try:
+            slugs = atq.parse_applied_slugs(path)
+            self.assertEqual(slugs, {"tediber", "foo-bar"})
+            # And to be explicit: the narrative paths are NOT in the set.
+            self.assertNotIn("narrative-path", slugs)
+            self.assertNotIn("another-bogus-path", slugs)
+            self.assertNotIn("dropped-page", slugs)
+            self.assertNotIn("another-path", slugs)
+        finally:
+            path.unlink()
+
+    def test_cohort_parser_handles_all_four_table_shapes(self):
+        """Each of the 4 cohort header layouts must be recognised."""
+        headers = [
+            # cohort 1 + 2: Site | Page | Change type | Pre impr/7d | Pre pos | Old | New
+            (
+                "| Site | Page | Change type | Pre impr/7d | Pre pos | Old | New |\n"
+                "|---|---|---|---|---|---|---|\n"
+                "| matelas | `/en/avis/c1-page/` | CTR-variant | 64 | 4.8 | a | b |\n"
+            ),
+            (
+                "| Site | Page | Change type | Pre impr/7d | Pre pos | Old | New |\n"
+                "|---|---|---|---|---|---|---|\n"
+                "| aspirateur | `/en/guide/c2-page/` | trim-rule | 63 | 7.7 | a | b |\n"
+            ),
+            # cohort 3: Site | Page | Change type | Locale | Old len | New len
+            (
+                "| Site | Page | Change type | Locale | Old len | New len |\n"
+                "|---|---|---|---|---|---|\n"
+                "| matelas | `/de/test/c3-page/` | trim-gemini | de | 71 | 60 |\n"
+            ),
+            # cohort 4: Site | Page | Change type | Locale | Old len | New len | Impr
+            (
+                "| Site | Page | Change type | Locale | Old len | New len | Impr |\n"
+                "|---|---|---|---|---|---|---|\n"
+                "| bureau | `/en/comparatif/c4-page/` | trim-rule | en | 63 | 47 | 183 |\n"
+            ),
+        ]
+        expected_slugs = ["c1-page", "c2-page", "c3-page", "c4-page"]
+        for table_md, expected in zip(headers, expected_slugs):
+            with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False, encoding="utf-8") as fp:
+                fp.write("# Header\n\n" + table_md + "\n")
+                path = Path(fp.name)
+            try:
+                slugs = atq.parse_applied_slugs(path)
+                self.assertIn(expected, slugs, f"missing {expected} from table: {table_md!r}")
+            finally:
+                path.unlink()
+
+    def test_cohort_parser_ignores_non_cohort_tables(self):
+        """Tables without both 'Page' AND 'Change type' headers must be skipped."""
+        md = (
+            "# Various tables\n\n"
+            "## A regular reference table (no Change type)\n\n"
+            "| Site | Page | Impr | Pos |\n"
+            "|---|---|---|---|\n"
+            "| matelas | `/en/test/ref-only-page/` | 100 | 5.0 |\n\n"
+            "## A change-log table (no Page column)\n\n"
+            "| Site | Url | Change type | Impr |\n"
+            "|---|---|---|---|\n"
+            "| matelas | `/en/test/url-col-page/` | trim-rule | 100 |\n\n"
+            "## Real cohort table\n\n"
+            "| Site | Page | Change type | Locale | Old | New |\n"
+            "|---|---|---|---|---|---|\n"
+            "| matelas | `/en/test/real-cohort-page/` | trim-rule | en | 50 | 40 |\n"
+        )
+        with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False, encoding="utf-8") as fp:
+            fp.write(md)
+            path = Path(fp.name)
+        try:
+            slugs = atq.parse_applied_slugs(path)
+            self.assertEqual(slugs, {"real-cohort-page"})
+            self.assertNotIn("ref-only-page", slugs)
+            self.assertNotIn("url-col-page", slugs)
+        finally:
+            path.unlink()
+
+    def test_cohort_parser_requires_separator_row(self):
+        """A `|...|` line that looks like a header but lacks the |---|---| separator
+        is NOT a table — must be skipped."""
+        md = (
+            "Some narrative containing `| Site | Page | Change type |` inline "
+            "but no separator row beneath it. So this:\n\n"
+            "| Site | Page | Change type | Locale |\n"
+            "| matelas | `/en/test/fake-table/` | trim-rule | en |\n"
+        )
+        with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False, encoding="utf-8") as fp:
+            fp.write(md)
+            path = Path(fp.name)
+        try:
+            slugs = atq.parse_applied_slugs(path)
+            self.assertEqual(slugs, set())
+        finally:
+            path.unlink()
+
+    def test_cohort_parser_ignores_html_comments(self):
+        """A commented-out cohort table must not be parsed."""
+        md = (
+            "# Notes\n\n"
+            "<!--\n"
+            "| Site | Page | Change type | Locale | Old | New |\n"
+            "|---|---|---|---|---|---|\n"
+            "| matelas | `/en/test/commented-out/` | trim-rule | en | 50 | 40 |\n"
+            "-->\n\n"
+            "## Live cohort\n\n"
+            "| Site | Page | Change type | Locale | Old | New |\n"
+            "|---|---|---|---|---|---|\n"
+            "| matelas | `/en/test/live-page/` | trim-rule | en | 50 | 40 |\n"
+        )
+        with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False, encoding="utf-8") as fp:
+            fp.write(md)
+            path = Path(fp.name)
+        try:
+            slugs = atq.parse_applied_slugs(path)
+            self.assertEqual(slugs, {"live-page"})
+            self.assertNotIn("commented-out", slugs)
+        finally:
+            path.unlink()
+
+    def test_cohort_parser_handles_future_column_reorder(self):
+        """If a hypothetical cohort 5 puts Page in a different column index, the
+        parser still extracts the slug from the Page column by name."""
+        md = (
+            "## Cohort 5 (hypothetical reorder)\n\n"
+            "| Page | Site | Change type | Locale | Old | New |\n"
+            "|---|---|---|---|---|---|\n"
+            "| `/en/guide/reordered-page/` | matelas | trim-rule | en | 50 | 40 |\n"
+        )
+        with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False, encoding="utf-8") as fp:
+            fp.write(md)
+            path = Path(fp.name)
+        try:
+            slugs = atq.parse_applied_slugs(path)
+            self.assertEqual(slugs, {"reordered-page"})
+        finally:
+            path.unlink()
+
 
 # ---------------------------------------------------------------------------
 # YAML edit logic
@@ -467,9 +622,15 @@ class TestDryRunIntegration(unittest.TestCase):
         self.assertIn("alpha.mdx", result.stdout)
 
     def test_exclude_applied_filters(self):
-        # Mark alpha as applied
+        # Mark alpha as applied — use a real cohort-table shape so the
+        # column-aware parser finds it (header with Page + Change type,
+        # canonical |---| separator row).
         self.cohort.write_text(
-            "## Cohort\n| s | `/en/test/alpha/` | x | 1 |\n", encoding="utf-8"
+            "## Cohort\n"
+            "| Site | Page | Change type | Locale | Old | New |\n"
+            "|---|---|---|---|---|---|\n"
+            "| matelas | `/en/test/alpha/` | trim-rule | en | 50 | 40 |\n",
+            encoding="utf-8",
         )
         result = subprocess.run(
             [
