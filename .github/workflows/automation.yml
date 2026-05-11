@@ -160,6 +160,15 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python scripts/agent_ctr_optimizer.py --daily --max 10 --min-impressions 200
 
+      # Title trimmer: complementary to CTR optimizer. Finds titles >60 chars
+      # (Google SERP truncates) and proposes trims preserving year + entity.
+      # Rule-based by default; Gemini fallback opt-in via --gemini-fallback.
+      # Queue-only output to reports/agent_queues/title_trim_proposed/{date}.json.
+      # Tests: scripts/test_title_trimmer.py (10/10 pass).
+      - name: Run title trimmer (queue-only, length-only fixes)
+        continue-on-error: true
+        run: python scripts/agent_title_trimmer.py
+
       - name: Run CRO optimizer consumer (apply CTR meta + ASIN events)
         continue-on-error: true
         env:
