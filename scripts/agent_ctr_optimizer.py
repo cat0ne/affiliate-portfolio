@@ -55,13 +55,20 @@ import argparse
 import json
 import os
 import re
-import shutil
 import sqlite3
 import sys
 import uuid
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
+
+from affiliate_paths import portfolio_root
+from hermes_bus import (
+    claim_inbox_json,
+    complete_claimed_event,
+    ensure_hermes_dirs,
+    fail_claimed_event,
+)
 
 # ---------------------------------------------------------------------------
 # .env
@@ -87,18 +94,17 @@ _load_env()
 # ---------------------------------------------------------------------------
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-BASE_DIR = Path("/Users/gho/Documents/affiliation-sites")
+BASE_DIR = portfolio_root()
 DB_PATH = Path("~/affiliate-machine.db").expanduser()
 REPORTS_DIR = BASE_DIR / "reports"
-EVENTS_BASE = Path.home() / "hermes-events"
-INBOX_DIR = EVENTS_BASE / "inbox"
-PROCESSING_DIR = EVENTS_BASE / "processing"
-COMPLETED_DIR = EVENTS_BASE / "completed"
-FAILED_DIR = EVENTS_BASE / "failed"
+_HP_INIT = ensure_hermes_dirs()
+EVENTS_BASE = _HP_INIT.base
+INBOX_DIR = _HP_INIT.inbox
+PROCESSING_DIR = _HP_INIT.processing
+COMPLETED_DIR = _HP_INIT.completed
+FAILED_DIR = _HP_INIT.failed
 
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-for _d in (INBOX_DIR, PROCESSING_DIR, COMPLETED_DIR, FAILED_DIR):
-    _d.mkdir(parents=True, exist_ok=True)
 
 AGENT_NAME = "agent-ctr-optimizer"
 
@@ -144,13 +150,30 @@ def _conn() -> sqlite3.Connection:
     return conn
 
 
+def _has_table(conn: sqlite3.Connection, name: str) -> bool:
+    row = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1",
+        (name,),
+    ).fetchone()
+    return row is not None
+
+
 def find_low_ctr_pages(site_slug: str, min_impressions: int = 200, top_n: int = 50) -> list[dict[str, Any]]:
-    """Aggregate page_metrics by page, compare actual CTR to expected CTR for
-    avg position. Return pages where actual / expected < 0.7 (under-performing
-    by ≥ 30%)."""
+    """Aggregate by page from `gsc_page_daily` (preferred) or legacy `page_metrics`."""
     with _conn() as conn:
-        rows = conn.execute(
-            """
+        q_gsc = """
+            SELECT page_path,
+                   SUM(impressions) AS impressions,
+                   SUM(clicks)      AS clicks,
+                   AVG(position)    AS position
+            FROM gsc_page_daily
+            WHERE site_slug = ? AND impressions IS NOT NULL
+            GROUP BY page_path
+            HAVING SUM(impressions) >= ?
+            ORDER BY SUM(impressions) DESC
+            LIMIT ?
+        """
+        q_legacy = """
             SELECT page_path,
                    SUM(impressions) AS impressions,
                    SUM(clicks)      AS clicks,
@@ -161,9 +184,27 @@ def find_low_ctr_pages(site_slug: str, min_impressions: int = 200, top_n: int = 
             HAVING SUM(impressions) >= ?
             ORDER BY SUM(impressions) DESC
             LIMIT ?
-            """,
-            (site_slug, min_impressions, top_n * 3),
-        ).fetchall()
+        """
+        if _has_table(conn, "gsc_page_daily"):
+            chk = conn.execute(
+                "SELECT 1 FROM gsc_page_daily WHERE site_slug = ? LIMIT 1",
+                (site_slug,),
+            ).fetchone()
+            if chk:
+                rows = conn.execute(
+                    q_gsc, (site_slug, min_impressions, top_n * 3)
+                ).fetchall()
+            else:
+                rows = []
+        else:
+            rows = []
+        if not rows:
+            try:
+                rows = conn.execute(
+                    q_legacy, (site_slug, min_impressions, top_n * 3)
+                ).fetchall()
+            except sqlite3.Error:
+                rows = []
 
     out: list[dict[str, Any]] = []
     for r in rows:
@@ -563,15 +604,6 @@ def _read_event(path: Path) -> Optional[dict]:
         return None
 
 
-def _move(src: Path, dst_dir: Path) -> Optional[Path]:
-    dst = dst_dir / src.name
-    try:
-        shutil.move(str(src), str(dst))
-        return dst
-    except Exception:
-        return None
-
-
 def consume(limit: int = 10, dry_run: bool = False) -> int:
     handled = 0
     for path in sorted(INBOX_DIR.glob("*.json")):
@@ -585,17 +617,16 @@ def consume(limit: int = 10, dry_run: bool = False) -> int:
             continue
         if not target and event.get("type") not in CONSUMED_TYPES:
             continue
-        proc = _move(path, PROCESSING_DIR) if not dry_run else path
+        proc = claim_inbox_json(path, dry_run=dry_run)
         if not proc:
             continue
+        event["_file_path"] = str(proc)
         try:
             run_daily(dry_run=dry_run)
-            if not dry_run:
-                _move(proc, COMPLETED_DIR)
+            complete_claimed_event(event, dry_run=dry_run)
         except Exception as exc:
             print(f"  ❌ {AGENT_NAME} failed on {path.name}: {exc}")
-            if not dry_run:
-                _move(proc, FAILED_DIR)
+            fail_claimed_event(event, dry_run=dry_run)
         handled += 1
     print(f"[SUMMARY] {AGENT_NAME} handled {handled} event(s).")
     return handled

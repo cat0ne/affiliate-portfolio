@@ -18,6 +18,8 @@ concurrency:
 jobs:
   automation:
     runs-on: ubuntu-latest
+    env:
+      AFFILIATION_SITES_ROOT: ${{ github.workspace }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -33,6 +35,30 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r scripts/requirements.txt
+
+      - name: Hermes bus smoke test
+        run: python scripts/test_hermes_bus_smoke.py
+
+      - name: Bootstrap machine DB, Hermes symlinks, GSC page×day import
+        env:
+          GSC_CREDENTIALS_JSON: ${{ secrets.GSC_CREDENTIALS_JSON }}
+        run: |
+          mkdir -p data .hermes-events/inbox .hermes-events/processing .hermes-events/completed .hermes-events/failed
+          ln -sf "$GITHUB_WORKSPACE/data/affiliate-machine.db" "$HOME/affiliate-machine.db"
+          rm -rf "$HOME/hermes-events"
+          ln -s "$GITHUB_WORKSPACE/.hermes-events" "$HOME/hermes-events"
+          if [ -n "$GSC_CREDENTIALS_JSON" ]; then
+            printf '%s' "$GSC_CREDENTIALS_JSON" > "$GITHUB_WORKSPACE/gsc-credentials.json"
+          fi
+          if [ ! -s data/affiliate-machine.db ]; then
+            python scripts/db_sync.py --init
+          fi
+          python scripts/db_sync.py --sync
+          if [ -f "$GITHUB_WORKSPACE/gsc-credentials.json" ]; then
+            python scripts/pipeline_import_gsc_daily.py --days 35
+          else
+            echo "⚠️  No gsc-credentials.json — skipped pipeline_import_gsc_daily (CTR/CWV use fallbacks)"
+          fi
 
       - name: Run price drop alerts
         run: python scripts/price-drop-alerts.py
@@ -95,7 +121,12 @@ jobs:
         continue-on-error: true
         env:
           PSI_API_KEY: ${{ secrets.PSI_API_KEY }}
-        run: python scripts/agent_cwv.py --daily --top 10 --strategy mobile
+          GSC_CREDENTIALS_JSON: ${{ secrets.GSC_CREDENTIALS_JSON }}
+        run: |
+          if [ -n "$GSC_CREDENTIALS_JSON" ] && [ ! -f gsc-credentials.json ]; then
+            echo "$GSC_CREDENTIALS_JSON" > gsc-credentials.json
+          fi
+          python scripts/agent_cwv.py --daily --top 10 --strategy mobile
 
       - name: Run internal-linking agent (B) — orphan rescue
         continue-on-error: true

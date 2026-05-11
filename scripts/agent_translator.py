@@ -2,7 +2,7 @@
 """
 Agent Translator — Hermes Event Consumer for Content Translation
 
-Consumes content.translation_needed events from ~/hermes-events/inbox/.
+Consumes content.translation_needed events from the Hermes inbox (env paths via ``scripts/hermes_bus.py``).
 For each event:
   1. Reads event payload (article slug, site, source locale, target locale)
   2. Resolves the source MDX file path from the repo
@@ -33,7 +33,6 @@ import argparse
 import json
 import os
 import re
-import shutil
 import sqlite3
 import subprocess
 import sys
@@ -42,6 +41,15 @@ import uuid
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set, Tuple
+
+from affiliate_paths import portfolio_root
+from hermes_bus import (
+    claim_inbox_json,
+    complete_claimed_event,
+    ensure_hermes_dirs,
+    fail_claimed_event,
+    plain_move,
+)
 
 # ── Load .env from scripts directory ───────────────────────────────────────
 
@@ -65,13 +73,14 @@ _load_env()
 # ── Configuration ──────────────────────────────────────────────────────────
 
 DB_PATH = Path.home() / "affiliate-machine.db"
-EVENTS_DIR = Path.home() / "hermes-events"
-INBOX_DIR = EVENTS_DIR / "inbox"
-PROCESSING_DIR = EVENTS_DIR / "processing"
-COMPLETED_DIR = EVENTS_DIR / "completed"
-FAILED_DIR = EVENTS_DIR / "failed"
+_HP_INIT = ensure_hermes_dirs()
+EVENTS_DIR = _HP_INIT.base
+INBOX_DIR = _HP_INIT.inbox
+PROCESSING_DIR = _HP_INIT.processing
+COMPLETED_DIR = _HP_INIT.completed
+FAILED_DIR = _HP_INIT.failed
 
-BASE_DIR = Path("/Users/gho/Documents/affiliation-sites")
+BASE_DIR = portfolio_root()
 
 # Frontmatter keys we preserve / expect
 FRONTMATTER_SCHEMA = {
@@ -186,8 +195,7 @@ MAX_RETRIES = 3
 
 
 def ensure_dirs() -> None:
-    for d in (INBOX_DIR, PROCESSING_DIR, COMPLETED_DIR, FAILED_DIR):
-        d.mkdir(parents=True, exist_ok=True)
+    ensure_hermes_dirs()
 
 
 def now_iso() -> str:
@@ -231,16 +239,7 @@ def read_event(path: Path) -> Optional[Dict[str, Any]]:
 
 
 def move_event(src: Path, dst_dir: Path, dry_run: bool = False) -> Optional[Path]:
-    dst = dst_dir / src.name
-    if dry_run:
-        print(f"  [DRY-RUN] Would move {src.name} -> {dst_dir.name}/")
-        return dst
-    try:
-        shutil.move(str(src), str(dst))
-        return dst
-    except OSError as exc:
-        print(f"  [ERROR] Failed to move {src.name}: {exc}")
-        return None
+    return plain_move(src, dst_dir, dry_run=dry_run)
 
 
 # ── Frontmatter helpers (mirrors agent_writer.py) ──────────────────────────
@@ -1120,19 +1119,18 @@ def consume_events(limit: int = 10, dry_run: bool = False) -> int:
         event_type = event.get("type", "")
 
         if event_type == "content.translation_needed":
-            proc_path = move_event(path, PROCESSING_DIR, dry_run=dry_run)
-            if not dry_run and proc_path:
-                event["_file_path"] = str(proc_path)
+            proc_path = claim_inbox_json(path, dry_run=dry_run)
+            if not proc_path:
+                continue
+            event["_file_path"] = str(proc_path)
 
             success = process_translation_event(event, dry_run=dry_run)
 
             if success:
-                if not dry_run and proc_path:
-                    move_event(proc_path, COMPLETED_DIR, dry_run=dry_run)
+                complete_claimed_event(event, dry_run=dry_run)
                 processed += 1
             else:
-                if not dry_run and proc_path:
-                    move_event(proc_path, FAILED_DIR, dry_run=dry_run)
+                fail_claimed_event(event, dry_run=dry_run)
                 failed += 1
 
     print(f"\n📊 Summary: {processed} processed, {failed} failed, {limit - processed - failed} remaining")

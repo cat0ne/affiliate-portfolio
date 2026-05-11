@@ -38,13 +38,20 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import shutil
 import sqlite3
 import sys
 import uuid
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
+
+from affiliate_paths import portfolio_root
+from hermes_bus import (
+    claim_inbox_json,
+    complete_claimed_event,
+    ensure_hermes_dirs,
+    fail_claimed_event,
+)
 
 # ---------------------------------------------------------------------------
 # .env
@@ -70,18 +77,17 @@ _load_env()
 # ---------------------------------------------------------------------------
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-BASE_DIR = Path("/Users/gho/Documents/affiliation-sites")
+BASE_DIR = portfolio_root()
 DB_PATH = Path("~/affiliate-machine.db").expanduser()
 REPORTS_DIR = BASE_DIR / "reports"
-EVENTS_BASE = Path.home() / "hermes-events"
-INBOX_DIR = EVENTS_BASE / "inbox"
-PROCESSING_DIR = EVENTS_BASE / "processing"
-COMPLETED_DIR = EVENTS_BASE / "completed"
-FAILED_DIR = EVENTS_BASE / "failed"
+_HP_INIT = ensure_hermes_dirs()
+EVENTS_BASE = _HP_INIT.base
+INBOX_DIR = _HP_INIT.inbox
+PROCESSING_DIR = _HP_INIT.processing
+COMPLETED_DIR = _HP_INIT.completed
+FAILED_DIR = _HP_INIT.failed
 
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-for _d in (INBOX_DIR, PROCESSING_DIR, COMPLETED_DIR, FAILED_DIR):
-    _d.mkdir(parents=True, exist_ok=True)
 
 AGENT_NAME = "agent-syndication"
 
@@ -425,15 +431,15 @@ def run_daily(
             emit_event(
                 "content.refresh_needed",
                 {
-                    "site": d["site"],
-                    "slug": d["slug"],
+                    "site_slug": d["site"],
+                    "article_slug": d["slug"],
                     "locale": d["locale"],
                     "reason": "translation_drift",
                     "fr_commission": d["fr_commission"],
                     "translated_commission": d["translated_commission"],
                 },
                 priority=3,
-                target_agent="agent-strategist",
+                target_agent="agent-writer",
             )
     out_path = write_report(per_site, drifts_all, dry_run)
     if not dry_run:
@@ -461,14 +467,6 @@ def _read_event(path: Path) -> Optional[dict]:
         return None
 
 
-def _move(src: Path, dst_dir: Path) -> Optional[Path]:
-    dst = dst_dir / src.name
-    try:
-        shutil.move(str(src), str(dst))
-        return dst
-    except Exception:
-        return None
-
 
 def consume(limit: int = 10, dry_run: bool = False) -> int:
     handled = 0
@@ -483,17 +481,16 @@ def consume(limit: int = 10, dry_run: bool = False) -> int:
             continue
         if not target and event.get("type") not in CONSUMED_TYPES:
             continue
-        proc = _move(path, PROCESSING_DIR) if not dry_run else path
+        proc = claim_inbox_json(path, dry_run=dry_run)
         if not proc:
             continue
+        event["_file_path"] = str(proc)
         try:
             run_daily(dry_run=dry_run)
-            if not dry_run:
-                _move(proc, COMPLETED_DIR)
+            complete_claimed_event(event, dry_run=dry_run)
         except Exception as exc:
             print(f"  ❌ {AGENT_NAME} failed on {path.name}: {exc}")
-            if not dry_run:
-                _move(proc, FAILED_DIR)
+            fail_claimed_event(event, dry_run=dry_run)
         handled += 1
     print(f"[SUMMARY] {AGENT_NAME} handled {handled} event(s).")
     return handled

@@ -20,6 +20,8 @@ service-account*.json
 *.sqlite3
 scripts/link_opportunities.db
 hermes-events/
+.hermes-events/
+data/
 
 # ── OS / editor cruft ──────────────────────────────────────────────────
 .DS_Store

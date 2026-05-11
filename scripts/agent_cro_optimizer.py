@@ -2,7 +2,7 @@
 """
 Agent CRO Optimizer — Hermes Event Consumer for ASIN & Conversion Optimization.
 
-Consumes events from ~/hermes-events/inbox/:
+Consumes events from the Hermes inbox (``HERMES_EVENTS_ROOT`` / ``HERMES_EVENTS_DIR``; ``scripts/hermes_bus.py``):
   - price.asin_invalid          → Find replacement ASIN via Apify + rewrite links
   - cro.asin_missing_locale     → Flag locale gaps for content team
   - cro.meta_variant_proposed   → Patch MDX title/meta from agent_ctr_optimizer; emit seo.fix_applied
@@ -52,9 +52,19 @@ _load_env()
 sys.path.insert(0, str(Path(__file__).parent))
 from apify_client import ApifyClient
 
+from affiliate_paths import portfolio_root
+from hermes_bus import (
+    claim_inbox_json,
+    complete_claimed_event,
+    ensure_hermes_dirs,
+    fail_claimed_event,
+    list_inbox_json_sorted,
+    read_json_event,
+    write_inbox_event_json,
+)
+
 DB_PATH = Path.home() / "affiliate-machine.db"
-EVENTS_DIR = Path.home() / "hermes-events"
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = portfolio_root()
 
 # Affiliate tags per marketplace
 TAG_MAP = {
@@ -97,8 +107,7 @@ def dict_factory(cursor, row):
 
 
 def ensure_dirs():
-    for sub in ("inbox", "processing", "completed", "failed"):
-        (EVENTS_DIR / sub).mkdir(parents=True, exist_ok=True)
+    ensure_hermes_dirs()
 
 
 def emit_event(
@@ -121,10 +130,7 @@ def emit_event(
     }
     if target_agent:
         event["target_agent"] = target_agent
-    event_file = EVENTS_DIR / "inbox" / f"{event['id']}.json"
-    with open(event_file, "w", encoding="utf-8") as f:
-        json.dump(event, f, indent=2, default=str)
-    return event_file
+    return write_inbox_event_json(event, f"{event['id']}.json")
 
 
 def patch_frontmatter_title(text: str, new_title: str, sync_meta: bool = True) -> str:
@@ -611,21 +617,20 @@ def process_asin_invalid_event(event: dict, dry_run: bool = False) -> dict:
 def process_events(dry_run: bool = False, limit: int = None):
     """Process all pending events in the inbox."""
     ensure_dirs()
-    inbox = EVENTS_DIR / "inbox"
-    
+    paths = ensure_hermes_dirs()
+
     # Find relevant events (CRO agent only; ignore other agents' inbox noise)
     events = []
-    for f in sorted(inbox.glob("*.json")):
-        try:
-            event = json.loads(f.read_text(encoding="utf-8"))
-            et = event.get("type")
-            ta = event.get("target_agent")
-            if ta not in (None, "agent-cro-optimizer"):
-                continue
-            if et in ("price.asin_invalid", "cro.asin_missing_locale", "cro.meta_variant_proposed"):
-                events.append((f, event))
-        except Exception:
+    for f in list_inbox_json_sorted(paths):
+        event = read_json_event(f)
+        if not event:
             continue
+        et = event.get("type")
+        ta = event.get("target_agent")
+        if ta not in (None, "agent-cro-optimizer"):
+            continue
+        if et in ("price.asin_invalid", "cro.asin_missing_locale", "cro.meta_variant_proposed"):
+            events.append((f, event))
     
     if limit:
         events = events[:limit]
@@ -637,7 +642,12 @@ def process_events(dry_run: bool = False, limit: int = None):
         print(f"\n{'='*50}")
         print(f"Processing: {event_file.name}")
         print(f"Type: {event.get('type')}")
-        
+
+        proc_path = claim_inbox_json(event_file, dry_run=dry_run)
+        if proc_path is None:
+            continue
+        event["_file_path"] = str(proc_path)
+
         try:
             if event.get("type") == "price.asin_invalid":
                 result = process_asin_invalid_event(event, dry_run=dry_run)
@@ -650,22 +660,14 @@ def process_events(dry_run: bool = False, limit: int = None):
                 result = process_meta_variant_event(event, dry_run=dry_run)
             else:
                 result = {"status": "skipped", "reason": "unknown_event_type"}
-            
+
             results.append(result)
-            
-            # Move to completed
-            if not dry_run:
-                completed = EVENTS_DIR / "completed" / event_file.name
-                event_file.rename(completed)
-                
+            complete_claimed_event(event, dry_run=dry_run)
+
         except Exception as e:
             print(f"   ❌ Error processing event: {e}")
             results.append({"status": "error", "error": str(e)})
-            
-            # Move to failed
-            if not dry_run:
-                failed = EVENTS_DIR / "failed" / event_file.name
-                event_file.rename(failed)
+            fail_claimed_event(event, dry_run=dry_run)
     
     # Summary
     fixed = sum(1 for r in results if r.get("status") == "fixed")

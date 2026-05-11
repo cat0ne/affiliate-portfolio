@@ -47,7 +47,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import shutil
 import sqlite3
 import sys
 import urllib.parse
@@ -55,6 +54,14 @@ import uuid
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Optional
+
+from affiliate_paths import portfolio_root
+from hermes_bus import (
+    claim_inbox_json,
+    complete_claimed_event,
+    ensure_hermes_dirs,
+    fail_claimed_event,
+)
 
 # ---------------------------------------------------------------------------
 # .env
@@ -79,18 +86,17 @@ _load_env()
 # Paths + constants
 # ---------------------------------------------------------------------------
 
-BASE_DIR = Path("/Users/gho/Documents/affiliation-sites")
+BASE_DIR = portfolio_root()
 DB_PATH = Path("~/affiliate-machine.db").expanduser()
 REPORTS_DIR = BASE_DIR / "reports"
-EVENTS_BASE = Path.home() / "hermes-events"
-INBOX_DIR = EVENTS_BASE / "inbox"
-PROCESSING_DIR = EVENTS_BASE / "processing"
-COMPLETED_DIR = EVENTS_BASE / "completed"
-FAILED_DIR = EVENTS_BASE / "failed"
+_HP = ensure_hermes_dirs()
+EVENTS_BASE = _HP.base
+INBOX_DIR = _HP.inbox
+PROCESSING_DIR = _HP.processing
+COMPLETED_DIR = _HP.completed
+FAILED_DIR = _HP.failed
 
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-for _d in (INBOX_DIR, PROCESSING_DIR, COMPLETED_DIR, FAILED_DIR):
-    _d.mkdir(parents=True, exist_ok=True)
 
 AGENT_NAME = "agent-canary"
 
@@ -200,16 +206,38 @@ def metrics_for_urls(urls: list[str], days: int = 7, end_date: Optional[date] = 
     start = end - timedelta(days=days)
     qmarks = ",".join("?" * len(urls))
     with _conn() as conn:
-        row = conn.execute(
-            f"""
-            SELECT COALESCE(SUM(clicks), 0) AS c, COALESCE(SUM(impressions), 0) AS i
-            FROM page_metrics
-            WHERE page_path IN ({qmarks})
-              AND date BETWEEN ? AND ?
-            """,
-            (*urls, start.isoformat(), end.isoformat()),
+        def _from(table: str) -> tuple[int, int]:
+            row = conn.execute(
+                f"""
+                SELECT COALESCE(SUM(clicks), 0) AS c, COALESCE(SUM(impressions), 0) AS i
+                FROM {table}
+                WHERE page_path IN ({qmarks})
+                  AND date BETWEEN ? AND ?
+                """,
+                (*urls, start.isoformat(), end.isoformat()),
+            ).fetchone()
+            return (int(row["c"] or 0), int(row["i"] or 0))
+
+        tinfo = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='gsc_page_daily'"
         ).fetchone()
-    return (int(row["c"] or 0), int(row["i"] or 0))
+        if tinfo:
+            c, i = _from("gsc_page_daily")
+            if c > 0 or i > 0:
+                return (c, i)
+        try:
+            row = conn.execute(
+                f"""
+                SELECT COALESCE(SUM(clicks), 0) AS c, COALESCE(SUM(impressions), 0) AS i
+                FROM page_metrics
+                WHERE page_path IN ({qmarks})
+                  AND date BETWEEN ? AND ?
+                """,
+                (*urls, start.isoformat(), end.isoformat()),
+            ).fetchone()
+            return (int(row["c"] or 0), int(row["i"] or 0))
+        except sqlite3.Error:
+            return (0, 0)
 
 
 # ---------------------------------------------------------------------------
@@ -414,15 +442,6 @@ def evaluate(window_h: int = DEFAULT_CANARY_WINDOW_H, dry_run: bool = False) -> 
 # Consumer (deployment.completed)
 # ---------------------------------------------------------------------------
 
-def _move(src: Path, dst_dir: Path) -> Optional[Path]:
-    dst = dst_dir / src.name
-    try:
-        shutil.move(str(src), str(dst))
-        return dst
-    except Exception:
-        return None
-
-
 def consume(limit: int = 20, dry_run: bool = False) -> int:
     handled = 0
     for path in sorted(INBOX_DIR.glob("*.json")):
@@ -434,17 +453,16 @@ def consume(limit: int = 20, dry_run: bool = False) -> int:
         # We are interested in deployment.completed regardless of target.
         if event.get("type") != "deployment.completed":
             continue
-        proc = _move(path, PROCESSING_DIR) if not dry_run else path
+        proc = claim_inbox_json(path, dry_run=dry_run)
         if not proc:
             continue
+        event["_file_path"] = str(proc)
         try:
             ingest_deployment(event, dry_run=dry_run)
-            if not dry_run:
-                _move(proc, COMPLETED_DIR)
+            complete_claimed_event(event, dry_run=dry_run)
         except Exception as exc:
             print(f"  ❌ {AGENT_NAME} failed on {path.name}: {exc}")
-            if not dry_run:
-                _move(proc, FAILED_DIR)
+            fail_claimed_event(event, dry_run=dry_run)
         handled += 1
     print(f"[SUMMARY] {AGENT_NAME} ingested {handled} deployment event(s).")
     return handled

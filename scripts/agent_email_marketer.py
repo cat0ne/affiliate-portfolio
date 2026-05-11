@@ -53,6 +53,8 @@ def _load_env() -> None:
 
 _load_env()
 
+from hermes_bus import ensure_hermes_dirs  # noqa: E402 — after env load for HERMES_* vars
+
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -60,7 +62,6 @@ _load_env()
 BASE_DIR = Path("/Users/gho/Documents/affiliation-sites")
 SCRIPTS_DIR = BASE_DIR / "scripts"
 REPORTS_DIR = BASE_DIR / "reports"
-EVENTS_DIR = Path.home() / "hermes-events" / "inbox"
 
 DB_PATH = Path.home() / "affiliate-machine.db"
 
@@ -349,7 +350,7 @@ def generate_newsletter_markdown(
 
 def emit_event(event_type: str, payload: dict[str, Any]) -> Path | None:
     """Emit a Hermes event to the inbox directory."""
-    EVENTS_DIR.mkdir(parents=True, exist_ok=True)
+    inbox = ensure_hermes_dirs().inbox
     event = {
         "id": str(uuid.uuid4()),
         "type": event_type,
@@ -361,7 +362,7 @@ def emit_event(event_type: str, payload: dict[str, Any]) -> Path | None:
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
     filename = f"{event['id']}.json"
-    path = EVENTS_DIR / filename
+    path = inbox / filename
     try:
         path.write_text(json.dumps(event, indent=2, ensure_ascii=False), encoding="utf-8")
         return path

@@ -16,7 +16,9 @@ from pathlib import Path
 
 import yaml
 
-BASE_DIR = Path("/Users/gho/Documents/affiliation-sites")
+from affiliate_paths import portfolio_root
+
+BASE_DIR = portfolio_root()
 REPORTS_DIR = BASE_DIR / "reports"
 SITES = ["aspirateur", "bureau", "cafe", "matelas", "pixinstant"]
 STALE_DAYS = 90

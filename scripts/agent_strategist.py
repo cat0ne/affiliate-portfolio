@@ -25,6 +25,16 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from affiliate_paths import portfolio_root
+from hermes_bus import (
+    claim_inbox_json,
+    complete_claimed_event,
+    ensure_hermes_dirs,
+    fail_claimed_event,
+    get_hermes_paths,
+    plain_move,
+)
+
 # Load .env from scripts directory
 def _load_env():
     env_file = Path(__file__).parent / ".env"
@@ -41,14 +51,9 @@ _load_env()
 
 # ── Paths ──────────────────────────────────────────────────────────────────
 SCRIPT_DIR = Path(__file__).resolve().parent
-BASE_DIR = Path("/Users/gho/Documents/affiliation-sites")
+BASE_DIR = portfolio_root()
 REPORTS_DIR = BASE_DIR / "reports"
 DB_PATH = Path("~/affiliate-machine.db").expanduser()
-EVENTS_BASE = Path.home() / "hermes-events"
-INBOX_DIR = EVENTS_BASE / "inbox"
-PROCESSING_DIR = EVENTS_BASE / "processing"
-COMPLETED_DIR = EVENTS_BASE / "completed"
-FAILED_DIR = EVENTS_BASE / "failed"
 
 # ── Logging ──────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -169,16 +174,16 @@ def get_content_gap_info(conn: sqlite3.Connection, site_slug: str, article_slug:
 # ═════════════════════════════════════════════════════════════════════════════
 
 def ensure_dirs() -> None:
-    for d in (INBOX_DIR, PROCESSING_DIR, COMPLETED_DIR, FAILED_DIR):
-        d.mkdir(parents=True, exist_ok=True)
+    ensure_hermes_dirs()
 
 
 def list_inbox_events(event_type: Optional[str] = None) -> List[Path]:
     """Return sorted list of unprocessed JSON event files in inbox, optionally filtered by type."""
-    if not INBOX_DIR.exists():
+    inbox = get_hermes_paths().inbox
+    if not inbox.exists():
         return []
     files = sorted(
-        [f for f in INBOX_DIR.iterdir() if f.is_file() and f.suffix == ".json"],
+        [f for f in inbox.iterdir() if f.is_file() and f.suffix == ".json"],
         key=lambda p: p.stat().st_mtime,
     )
     matched = []
@@ -213,17 +218,7 @@ def read_event(path: Path) -> Optional[Dict[str, Any]]:
 
 
 def move_event(src: Path, dst_dir: Path, dry_run: bool = False) -> Optional[Path]:
-    import shutil
-    dst = dst_dir / src.name
-    if dry_run:
-        logger.info("[DRY-RUN] Would move %s -> %s/", src.name, dst_dir.name)
-        return dst
-    try:
-        shutil.move(str(src), str(dst))
-        return dst
-    except OSError as exc:
-        logger.error("Failed to move %s to %s: %s", src.name, dst_dir.name, exc)
-        return None
+    return plain_move(src, dst_dir, dry_run=dry_run)
 
 
 def emit_event(
@@ -235,8 +230,7 @@ def emit_event(
     dry_run: bool = False,
 ) -> Optional[Path]:
     """Write a Hermes event JSON file to the inbox."""
-    EVENTS_BASE.mkdir(parents=True, exist_ok=True)
-    INBOX_DIR.mkdir(parents=True, exist_ok=True)
+    inbox = ensure_hermes_dirs().inbox
     event = {
         "id": str(uuid.uuid4()),
         "type": event_type,
@@ -248,7 +242,7 @@ def emit_event(
         "routing_key": f"agent.{target_agent}",
     }
     filename = f"{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}_{event_type.replace('.', '_')}_{event['id'][:8]}.json"
-    path = INBOX_DIR / filename
+    path = inbox / filename
     if dry_run:
         logger.info("[DRY-RUN] Would emit %s -> %s", event_type, filename)
         return path
@@ -835,7 +829,7 @@ def consume_events(
     for path in files[:limit]:
         event = read_event(path)
         if not event:
-            move_event(path, FAILED_DIR, dry_run=dry_run)
+            move_event(path, get_hermes_paths().failed, dry_run=dry_run)
             continue
 
         ev_type = event.get("type", "")
@@ -843,12 +837,11 @@ def consume_events(
             logger.info("Skipping unsupported event type: %s", ev_type)
             continue
 
-        # Move to processing
-        proc_path = move_event(path, PROCESSING_DIR, dry_run=dry_run)
-        if not proc_path and not dry_run:
+        proc_path = claim_inbox_json(path, dry_run=dry_run)
+        if not proc_path:
             continue
 
-        event["_file_path"] = str(proc_path or path)
+        event["_file_path"] = str(proc_path)
 
         try:
             if ev_type == "content.decay_detected":
@@ -901,15 +894,12 @@ def consume_events(
                         dry_run=dry_run,
                     )
 
-            # Move to completed
-            if not dry_run:
-                move_event(Path(event["_file_path"]), COMPLETED_DIR, dry_run=dry_run)
+            complete_claimed_event(event, dry_run=dry_run)
             processed += 1
 
         except Exception as exc:
             logger.exception("Failed to process event %s: %s", event.get("id"), exc)
-            if not dry_run:
-                move_event(Path(event["_file_path"]), FAILED_DIR, dry_run=dry_run)
+            fail_claimed_event(event, dry_run=dry_run)
 
     if conn:
         conn.close()
@@ -923,8 +913,9 @@ def consume_events(
 # ═════════════════════════════════════════════════════════════════════════════
 
 def main() -> int:
-    global INBOX_DIR, DB_PATH, EVENTS_BASE
-    _inbox_dir = str(INBOX_DIR)
+    global DB_PATH
+
+    _inbox_default = str(ensure_hermes_dirs().inbox)
     _db_path = str(DB_PATH)
 
     parser = argparse.ArgumentParser(
@@ -942,7 +933,7 @@ Examples:
     parser.add_argument("--limit", type=int, default=10, help="Max events to process (default: 10)")
     parser.add_argument("--dry-run", action="store_true", help="Show what would be done without writing/moving files")
     parser.add_argument("--event-type", type=str, choices=list(SUPPORTED_EVENT_TYPES), help="Filter by event type")
-    parser.add_argument("--inbox", type=str, default=_inbox_dir, help="Hermes events inbox directory")
+    parser.add_argument("--inbox", type=str, default=_inbox_default, help="Hermes events inbox directory")
     parser.add_argument("--db", type=str, default=_db_path, help="Path to affiliate-machine.db")
     parser.add_argument("--verbose", action="store_true", help="Enable debug logging")
 
@@ -951,10 +942,9 @@ Examples:
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    # Override paths if provided
     if args.inbox:
-        INBOX_DIR = Path(args.inbox)
-        EVENTS_BASE = INBOX_DIR.parent
+        os.environ["HERMES_EVENTS_DIR"] = args.inbox.strip()
+        get_hermes_paths(reset_cache=True)
     if args.db:
         DB_PATH = Path(args.db)
 

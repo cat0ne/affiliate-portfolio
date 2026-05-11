@@ -71,3 +71,34 @@ Before declaring a single-site change done:
 3. If the change is genuinely site-specific (niche-specific copy, niche-specific component), say so explicitly in the commit/PR body so future maintainers know not to copy it blindly.
 
 This applies to: bug fixes, visual/design tweaks, accessibility improvements, i18n fixes, SEO fixes, performance optimizations, and security/safety hardening. It does NOT apply to: niche-specific content, per-site product data, per-site theme colors.
+
+## Portfolio automation (MVP pipeline)
+
+Daily GitHub Actions (`automation.yml`) sets **`AFFILIATION_SITES_ROOT`** to the workspace root (the
+`affiliate-portfolio` clone that contains `matelas/`, `aspirateur/`, `affiliate-suite/`, etc.). All
+agents that used a hardcoded Mac path now call **`scripts/affiliate_paths.portfolio_root()`**, so the
+same scripts run locally and in CI.
+
+**Machine DB + Hermes in CI:** the workflow symlinks `~/affiliate-machine.db` → `data/affiliate-machine.db`
+and `~/hermes-events` → `.hermes-events/` so existing agents keep using home-relative paths while state
+lives in the workspace for that job. **`pipeline_import_gsc_daily.py`** fills **`gsc_page_daily`** (GSC
+page × date) so CWV, CTR, and canary use real click/impression totals without relying on legacy
+`page_metrics` alone.
+
+**Hermes bus (shared claim API):** all consumers use **`scripts/hermes_bus.py`** — **`claim_inbox_json()`**
+for inbox → processing, then **`complete_claimed_event()`** / **`fail_claimed_event()`** (or **`retry_or_fail_claimed_event()`**). Prefer **`HERMES_EVENTS_ROOT`** (queue base: `inbox/`, `processing/`, …). Back-compat: **`HERMES_EVENTS_DIR`** = path to `inbox/`. **`HERMES_CLAIM_STALE_SECONDS`** (default `86400`) removes stale `.claim` files under `state/` so crashed workers cannot block forever. Emitters resolve the inbox the same way (**`ensure_hermes_dirs()`**); use **`write_inbox_event_json()`** for atomic writes. **`scripts/test_hermes_bus_smoke.py`** exercises claim → complete on a temp dir (also runs in **`automation.yml`** after `pip install`). **`scripts/run-weekly-hermes.sh`** / **`run-weekly-report.sh`** set **`HERMES_EVENTS_DIR`** from **`HERMES_EVENTS_ROOT/inbox`** when the inbox variable is unset (else default **`$HOME/hermes-events/inbox`** with the CI symlink).
+
+**Multi-repo publishing:** site content still lives in separate GitHub repos; the publisher opens PRs
+per `SITE_REPOS` / event payload. Ensuring `AFFILIATION_SITES_ROOT` is the portfolio root keeps paths
+consistent across all consumers.
+
+## Learned User Preferences
+
+- Prefer wiring Hermes **consumers** (publisher, translator, CRO optimizer) so events produce repo changes and PRs, instead of adding agents that only emit events.
+- Treat **end-to-end pipeline behavior** as the success criterion: reliable daily data and detections should flow through to applied site fixes, content updates, and measurable impact—not orphan queues.
+
+## Learned Workspace Facts
+
+- Strategist and headline-style outputs must follow the **actual calendar year** in copy (e.g. 2026; advance appropriately in Q4); stale default years leak into user-visible titles and reports.
+- Without **real affiliate revenue or commission signals** in prioritization logic, strategist-style queues skew toward high-impression, low-commercial-intent queries; revenue-aware inputs materially change what gets worked first.
+

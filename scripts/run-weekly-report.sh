@@ -15,10 +15,14 @@ LOG_OUT="$REPORTS_DIR/gsc-monitor-out.log"
 LOG_ERR="$REPORTS_DIR/gsc-monitor-err.log"
 PYTHON="/opt/anaconda3/bin/python3"
 
-# Hermes event bus directory
-export HERMES_EVENTS_DIR="${HERMES_EVENTS_DIR:-$HOME/hermes-events/inbox}"
-
-# Ensure event bus directory exists
+# Hermes inbox: HERMES_EVENTS_DIR overrides; else HERMES_EVENTS_ROOT/inbox; else ~/hermes-events/inbox (CI symlink).
+if [ -z "${HERMES_EVENTS_DIR:-}" ]; then
+  if [ -n "${HERMES_EVENTS_ROOT:-}" ]; then
+    export HERMES_EVENTS_DIR="${HERMES_EVENTS_ROOT%/}/inbox"
+  else
+    export HERMES_EVENTS_DIR="$HOME/hermes-events/inbox"
+  fi
+fi
 mkdir -p "$HERMES_EVENTS_DIR"
 
 cd "$REPO_DIR"
@@ -33,7 +37,6 @@ $PYTHON "$REPO_DIR/scripts/content-decay-watcher.py" \
 # Emit Hermes events for decay findings
 $PYTHON "$REPO_DIR/scripts/content_decay_agent.py" \
     --emit-events \
-    --inbox "$HERMES_EVENTS_DIR" \
     >> "$LOG_OUT" 2>> "$LOG_ERR"
 
 # ─── 2. Site Health Monitor (original + agent) ───
@@ -44,7 +47,6 @@ $PYTHON "$REPO_DIR/scripts/site-health-monitor.py" \
 # Emit Hermes events for health findings
 $PYTHON "$REPO_DIR/scripts/site_health_agent.py" \
     --emit-events \
-    --inbox "$HERMES_EVENTS_DIR" \
     >> "$LOG_OUT" 2>> "$LOG_ERR"
 
 # ─── 3. GSC Weekly Report (original + agent) ───
@@ -57,7 +59,6 @@ $PYTHON "$REPO_DIR/scripts/gsc_weekly_report.py" \
 # Emit Hermes events for GSC analytics
 $PYTHON "$REPO_DIR/scripts/gsc_weekly_agent.py" \
     --emit-events \
-    --inbox "$HERMES_EVENTS_DIR" \
     >> "$LOG_OUT" 2>> "$LOG_ERR"
 
 # ─── 4. Update Google Sheets Dashboard (original + agent) ───
@@ -68,7 +69,6 @@ SPREADSHEET_ID="$SPREADSHEET_ID" $PYTHON "$REPO_DIR/scripts/update_sheets_dashbo
 # Emit Hermes events for dashboard sync
 $PYTHON "$REPO_DIR/scripts/dashboard_sync_agent.py" \
     --emit-events \
-    --inbox "$HERMES_EVENTS_DIR" \
     >> "$LOG_OUT" 2>> "$LOG_ERR"
 
 # ─── 5. Route events to interested agents ───

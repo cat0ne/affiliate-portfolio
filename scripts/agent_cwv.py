@@ -14,8 +14,9 @@ This agent:
 
 1. Picks the top-N most-clicked pages per site from `page_metrics` (or
    homepage + category pages when GSC is empty) and runs PSI v5 against each
-   on **mobile** strategy. Uses a free API key when present; PSI also works
-   anonymously with a stricter quota (25k/day with key, ~200/day without).
+   on **mobile** strategy. Uses `PSI_API_KEY` when set; otherwise the same
+   GSC service-account JSON as other agents (Bearer token, `openid` scope);
+   unauthenticated calls are a last resort (very low quota).
 2. Stores LCP, CLS, INP, TTFB, FCP, performance score, and the failing
    audits per URL/date in a new `cwv_metrics` table.
 3. Compares against the previous day. If LCP > 2500 ms, CLS > 0.1, INP > 200 ms,
@@ -25,8 +26,12 @@ This agent:
 
 Environment
 -----------
-* `PSI_API_KEY` / `PAGESPEED_API_KEY` (optional but recommended — get one
-  at https://console.cloud.google.com/apis/credentials).
+* `PSI_API_KEY` / `PAGESPEED_API_KEY` (optional — higher quota; create at
+  https://console.cloud.google.com/apis/credentials).
+* If no PSI key is set, the agent reuses the **same service-account JSON** as
+  GSC: `GSC_CREDENTIALS_PATH`, `GOOGLE_APPLICATION_CREDENTIALS`, `~/gsc-credentials.json`,
+  or `gsc-credentials.json` at the repo root. The GCP project must have
+  **PageSpeed Insights API** enabled for that service account.
 
 Usage
 -----
@@ -41,7 +46,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import shutil
 import sqlite3
 import sys
 import time
@@ -52,6 +56,22 @@ import uuid
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
+
+from affiliate_paths import portfolio_root
+from hermes_bus import (
+    claim_inbox_json,
+    complete_claimed_event,
+    ensure_hermes_dirs,
+    fail_claimed_event,
+)
+
+# google-auth / google-api-python-client (see scripts/requirements.txt)
+try:
+    from google.auth.transport.requests import Request as GoogleAuthRequest
+    from google.oauth2 import service_account as google_service_account
+except ImportError:
+    GoogleAuthRequest = None  # type: ignore[misc,assignment]
+    google_service_account = None  # type: ignore[misc,assignment]
 
 # ---------------------------------------------------------------------------
 # .env loader
@@ -77,23 +97,69 @@ _load_env()
 # ---------------------------------------------------------------------------
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-BASE_DIR = Path("/Users/gho/Documents/affiliation-sites")
+BASE_DIR = portfolio_root()
 DB_PATH = Path("~/affiliate-machine.db").expanduser()
 REPORTS_DIR = BASE_DIR / "reports"
-EVENTS_BASE = Path.home() / "hermes-events"
-INBOX_DIR = EVENTS_BASE / "inbox"
-PROCESSING_DIR = EVENTS_BASE / "processing"
-COMPLETED_DIR = EVENTS_BASE / "completed"
-FAILED_DIR = EVENTS_BASE / "failed"
+_HP_INIT = ensure_hermes_dirs()
+EVENTS_BASE = _HP_INIT.base
+INBOX_DIR = _HP_INIT.inbox
+PROCESSING_DIR = _HP_INIT.processing
+COMPLETED_DIR = _HP_INIT.completed
+FAILED_DIR = _HP_INIT.failed
 
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-for _d in (INBOX_DIR, PROCESSING_DIR, COMPLETED_DIR, FAILED_DIR):
-    _d.mkdir(parents=True, exist_ok=True)
 
 AGENT_NAME = "agent-cwv"
 
 PSI_ENDPOINT = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
 PSI_API_KEY = os.environ.get("PSI_API_KEY") or os.environ.get("PAGESPEED_API_KEY") or ""
+
+# Documented scope for PageSpeed Insights API v5 (see OAuth scopes list).
+_PSI_SA_SCOPES = ("openid",)
+
+_psi_sa_credentials: Optional[Any] = None
+
+
+def _resolve_gsc_credentials_path() -> Optional[Path]:
+    """Match GSC scripts: explicit path, ADC, home, then repo-root file."""
+    for raw in (
+        os.environ.get("GSC_CREDENTIALS_PATH"),
+        os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"),
+    ):
+        if raw:
+            p = Path(raw).expanduser()
+            if p.is_file():
+                return p
+    home_json = Path.home() / "gsc-credentials.json"
+    if home_json.is_file():
+        return home_json
+    repo_root = Path(__file__).resolve().parent.parent / "gsc-credentials.json"
+    if repo_root.is_file():
+        return repo_root
+    return None
+
+
+def _psi_oauth_access_token() -> Optional[str]:
+    """Bearer token for PSI when using a service account (no API key)."""
+    if not google_service_account or not GoogleAuthRequest:
+        return None
+    path = _resolve_gsc_credentials_path()
+    if not path:
+        return None
+    global _psi_sa_credentials
+    try:
+        if _psi_sa_credentials is None:
+            _psi_sa_credentials = google_service_account.Credentials.from_service_account_file(
+                str(path),
+                scopes=list(_PSI_SA_SCOPES),
+            )
+        if not _psi_sa_credentials.valid:
+            _psi_sa_credentials.refresh(GoogleAuthRequest())
+        return _psi_sa_credentials.token
+    except Exception as exc:
+        print(f"  ⚠️  PSI service-account auth failed ({path}): {exc}")
+        _psi_sa_credentials = None
+        return None
 
 SITES: dict[str, dict[str, str]] = {
     "aspirateur": {"domain": "top-aspirateur.fr"},
@@ -196,8 +262,13 @@ def call_psi(url: str, strategy: str = "mobile", timeout: int = 60) -> Optional[
         params["key"] = PSI_API_KEY
     qs = urllib.parse.urlencode(params, doseq=True)
     full = f"{PSI_ENDPOINT}?{qs}"
+    headers: dict[str, str] = {"User-Agent": "hermes-agent-cwv/1.0"}
+    if not PSI_API_KEY:
+        token = _psi_oauth_access_token()
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
     try:
-        req = urllib.request.Request(full, headers={"User-Agent": "hermes-agent-cwv/1.0"})
+        req = urllib.request.Request(full, headers=headers)
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
@@ -304,25 +375,51 @@ def parse_psi(raw: dict) -> dict[str, Any]:
 DEFAULT_PATHS = ["/", "/comparatif/", "/guide/", "/test/"]
 
 
+def _has_table(conn: sqlite3.Connection, name: str) -> bool:
+    row = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1",
+        (name,),
+    ).fetchone()
+    return row is not None
+
+
 def top_urls_for_site(site_slug: str, top_n: int = 10) -> list[str]:
-    """Return the top-N most-clicked URLs from `page_metrics`, falling back
-    to a sensible homepage + category set when GSC has no data yet."""
+    """Return the top-N most-clicked URLs from `gsc_page_daily` (pipeline import),
+    then legacy `page_metrics`, then homepage defaults."""
     domain = SITES[site_slug]["domain"]
     urls: list[str] = []
     try:
         with _conn() as conn:
-            rows = conn.execute(
-                """
-                SELECT page_path, SUM(clicks) AS clicks
-                FROM page_metrics
-                WHERE site_slug = ? AND date >= date('now','-30 days')
-                GROUP BY page_path
-                HAVING clicks > 0
-                ORDER BY clicks DESC
-                LIMIT ?
-                """,
-                (site_slug, top_n),
-            ).fetchall()
+            rows: list[sqlite3.Row] = []
+            if _has_table(conn, "gsc_page_daily"):
+                rows = conn.execute(
+                    """
+                    SELECT page_path, SUM(clicks) AS clicks
+                    FROM gsc_page_daily
+                    WHERE site_slug = ? AND date >= date('now','-30 days')
+                    GROUP BY page_path
+                    HAVING SUM(clicks) > 0
+                    ORDER BY SUM(clicks) DESC
+                    LIMIT ?
+                    """,
+                    (site_slug, top_n),
+                ).fetchall()
+            if not rows and _has_table(conn, "page_metrics"):
+                try:
+                    rows = conn.execute(
+                        """
+                        SELECT page_path, SUM(clicks) AS clicks
+                        FROM page_metrics
+                        WHERE site_slug = ? AND date >= date('now','-30 days')
+                        GROUP BY page_path
+                        HAVING SUM(clicks) > 0
+                        ORDER BY SUM(clicks) DESC
+                        LIMIT ?
+                        """,
+                        (site_slug, top_n),
+                    ).fetchall()
+                except sqlite3.Error:
+                    rows = []
         for r in rows:
             page = r["page_path"] or ""
             if page.startswith("http"):
@@ -583,15 +680,6 @@ def _read_event(path: Path) -> Optional[dict]:
         return None
 
 
-def _move(src: Path, dst_dir: Path) -> Optional[Path]:
-    dst = dst_dir / src.name
-    try:
-        shutil.move(str(src), str(dst))
-        return dst
-    except Exception:
-        return None
-
-
 def consume(limit: int = 10, dry_run: bool = False) -> int:
     handled = 0
     for path in sorted(INBOX_DIR.glob("*.json")):
@@ -605,20 +693,19 @@ def consume(limit: int = 10, dry_run: bool = False) -> int:
             continue
         if not target and event.get("type") not in CONSUMED_TYPES:
             continue
-        proc = _move(path, PROCESSING_DIR) if not dry_run else path
+        proc = claim_inbox_json(path, dry_run=dry_run)
         if not proc:
             continue
+        event["_file_path"] = str(proc)
         payload = event.get("payload") or {}
         site = payload.get("site") or payload.get("site_slug")
         sites = [site] if site in SITES else list(SITES.keys())
         try:
             run_daily(sites, top_n=int(payload.get("top_n", 10)), dry_run=dry_run)
-            if not dry_run:
-                _move(proc, COMPLETED_DIR)
+            complete_claimed_event(event, dry_run=dry_run)
         except Exception as exc:
             print(f"  ❌ {AGENT_NAME} failed on {path.name}: {exc}")
-            if not dry_run:
-                _move(proc, FAILED_DIR)
+            fail_claimed_event(event, dry_run=dry_run)
         handled += 1
     print(f"[SUMMARY] {AGENT_NAME} handled {handled} event(s).")
     return handled

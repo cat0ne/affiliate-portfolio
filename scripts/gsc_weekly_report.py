@@ -14,8 +14,10 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+from affiliate_paths import portfolio_root
+
 # ── Configuration ───────────────────────────────────────────────────────────
-BASE_DIR = Path("/Users/gho/Documents/affiliation-sites")
+BASE_DIR = portfolio_root()
 BASELINE_PATH = BASE_DIR / "baseline_post_deploy.json"
 CREDENTIALS_PATH = BASE_DIR / "gsc-credentials.json"
 REPORTS_DIR = BASE_DIR / "reports"

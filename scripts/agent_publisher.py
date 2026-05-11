@@ -25,6 +25,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from affiliate_paths import portfolio_root
+from hermes_bus import (
+    claim_inbox_json,
+    complete_claimed_event,
+    ensure_hermes_dirs,
+    fail_claimed_event,
+    plain_move,
+)
+
 # Load .env from scripts directory
 def _load_env():
     env_file = Path(__file__).parent / ".env"
@@ -40,12 +49,14 @@ def _load_env():
 _load_env()
 
 # ── Configuration ──────────────────────────────────────────────────────────
-BASE_DIR = Path("/Users/gho/Documents/affiliation-sites")
-EVENTS_BASE = Path.home() / "hermes-events"
-INBOX_DIR = EVENTS_BASE / "inbox"
-PROCESSING_DIR = EVENTS_BASE / "processing"
-COMPLETED_DIR = EVENTS_BASE / "completed"
-FAILED_DIR = EVENTS_BASE / "failed"
+BASE_DIR = portfolio_root()
+
+_HP_INIT = ensure_hermes_dirs()
+EVENTS_BASE = _HP_INIT.base
+INBOX_DIR = _HP_INIT.inbox
+PROCESSING_DIR = _HP_INIT.processing
+COMPLETED_DIR = _HP_INIT.completed
+FAILED_DIR = _HP_INIT.failed
 
 MAX_RETRIES = 3
 CI_POLL_INTERVAL = 30  # seconds
@@ -106,8 +117,7 @@ SUPPORTED_TYPES = {
 
 
 def ensure_dirs() -> None:
-    for d in (INBOX_DIR, PROCESSING_DIR, COMPLETED_DIR, FAILED_DIR):
-        d.mkdir(parents=True, exist_ok=True)
+    ensure_hermes_dirs()
 
 
 def emit_event(
@@ -147,32 +157,15 @@ def read_event(path: Path) -> dict[str, Any] | None:
 
 
 def move_event(src: Path, dst_dir: Path, dry_run: bool = False) -> Path | None:
-    dst = dst_dir / src.name
-    if dry_run:
-        print(f"[DRY-RUN] Would move {src.name} -> {dst_dir.name}/")
-        return dst
-    try:
-        shutil.move(str(src), str(dst))
-        return dst
-    except OSError as exc:
-        print(f"[ERROR] Failed to move {src.name} to {dst_dir.name}: {exc}")
-        return None
+    return plain_move(src, dst_dir, dry_run=dry_run)
 
 
 def complete_event(event: dict[str, Any], dry_run: bool = False) -> bool:
-    path = Path(event.get("_file_path", ""))
-    if not path.exists():
-        print(f"[WARN] Processing file missing for event {event.get('id')}")
-        return False
-    return move_event(path, COMPLETED_DIR, dry_run=dry_run) is not None
+    return complete_claimed_event(event, dry_run=dry_run)
 
 
 def fail_event(event: dict[str, Any], dry_run: bool = False) -> bool:
-    path = Path(event.get("_file_path", ""))
-    if not path.exists():
-        print(f"[WARN] Processing file missing for event {event.get('id')}")
-        return False
-    return move_event(path, FAILED_DIR, dry_run=dry_run) is not None
+    return fail_claimed_event(event, dry_run=dry_run)
 
 
 # ── Git / GitHub Helpers ─────────────────────────────────────────────────────
@@ -1213,7 +1206,7 @@ Examples:
             continue
 
         # Route to processing
-        processing_path = move_event(path, PROCESSING_DIR, dry_run=args.dry_run)
+        processing_path = claim_inbox_json(path, dry_run=args.dry_run)
         if processing_path is None:
             failed += 1
             continue

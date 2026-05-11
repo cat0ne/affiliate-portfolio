@@ -17,7 +17,9 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-BASE_DIR = Path("/Users/gho/Documents/affiliation-sites")
+from affiliate_paths import portfolio_root
+
+BASE_DIR = portfolio_root()
 CREDENTIALS_PATH = BASE_DIR / "gsc-credentials.json"
 REPORTS_DIR = BASE_DIR / "reports"
 
