@@ -176,37 +176,70 @@ def http_status(url: str, timeout: int = 15) -> Optional[int]:
 # Slug inventory + fuzzy matcher
 # ---------------------------------------------------------------------------
 
+_LOCALE_DIRS = {"en", "de", "es", "it", "uk"}
+
+
 def _site_slugs(site_slug: str) -> list[tuple[str, str]]:
-    """Return [(public_path, slug)] for every MDX article in a site."""
+    """Return [(public_path, slug)] for every MDX article in a site.
+
+    Handles both content-dir layouts:
+      - parallel: content/ (default) + content-en/, content-de/, ...
+      - nested:   content/ + content/en/, content/de/, ...
+
+    The previous version used `repo.rglob("content/**/*.mdx")` which:
+      1. Missed parallel-layout files entirely (548 files in matelas alone)
+      2. Recursed into node_modules and other irrelevant trees
+    """
     site = SITES.get(site_slug)
     if not site:
         return []
     repo = Path(site["repo"])
     out: list[tuple[str, str]] = []
     type_map = {"comparatifs": "comparatif", "guides": "guide", "tests": "test", "avis": "avis"}
-    for mdx in repo.rglob("content/**/*.mdx"):
-        try:
-            parts = mdx.relative_to(repo).parts
-        except ValueError:
-            continue
-        # Skip translation forks
-        if any(p in {"en", "de", "es", "it", "uk"} for p in parts):
-            # still emit but mark as locale-prefixed
-            locale = next((p for p in parts if p in {"en", "de", "es", "it", "uk"}), "")
-            prefix = f"/{locale}"
-        else:
-            prefix = ""
-        article_type = ""
-        for p in parts:
-            if p in type_map:
-                article_type = type_map[p]
-                break
-        slug = mdx.stem
-        if article_type:
-            path = f"{prefix}/{article_type}/{slug}/"
-        else:
-            path = f"{prefix}/{slug}/"
-        out.append((path, slug))
+
+    # Enumerate top-level content dirs explicitly so we catch both layouts
+    # without spelunking into node_modules.
+    content_roots = sorted({p for p in repo.glob("content*") if p.is_dir()})
+
+    for root in content_roots:
+        # Determine locale prefix from the root dir name (parallel layout)
+        root_name = root.name
+        root_locale = ""
+        if root_name.startswith("content-"):
+            suffix = root_name[len("content-"):]
+            if suffix in _LOCALE_DIRS:
+                root_locale = suffix
+
+        for mdx in root.rglob("*.mdx"):
+            try:
+                parts = mdx.relative_to(repo).parts
+            except ValueError:
+                continue
+
+            # Skip data fixtures
+            if any(p in {"data", "pages"} for p in parts):
+                continue
+
+            # Detect locale: parallel layout uses root_locale; nested layout uses
+            # the first path segment after `content/`.
+            locale = root_locale
+            if not locale and len(parts) >= 2 and parts[1] in _LOCALE_DIRS:
+                locale = parts[1]
+
+            prefix = f"/{locale}" if locale else ""
+
+            article_type = ""
+            for p in parts:
+                if p in type_map:
+                    article_type = type_map[p]
+                    break
+
+            slug = mdx.stem
+            if article_type:
+                path = f"{prefix}/{article_type}/{slug}/"
+            else:
+                path = f"{prefix}/{slug}/"
+            out.append((path, slug))
     return out
 
 
