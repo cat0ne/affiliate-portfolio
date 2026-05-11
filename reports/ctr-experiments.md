@@ -138,6 +138,36 @@ Locale mix: 3 FR + 6 DE + 5 ES + 5 IT + 2 FR-pixinstant.
 - 22 trim-rule + 17 trim-gemini + 1 CTR-variant + 2 excluded by self-critic
 - All EN versions of these 4 product pages now ≤60 chars; FR/DE/ES/IT versions also ≤60 chars (with the 1 documented exclusion)
 
+## Cohort 2026-05-11 (cohort 4, n=15) — high-impression sweep
+
+Top 15 pages by current-week impressions among URLs not yet in cohorts 1-3, with viable trims from the title queue and pos ≤ 10.
+
+| Site | Page | Change type | Locale | Old len | New len | Impr |
+|---|---|---|---|---|---|---|
+| bureau | `/en/comparatif/meilleure-chaise-ergonomique-moins-300-euros/` | trim-rule (pipe_drop) | en | 63 | 47 | 183 |
+| aspirateur | `/en/test/test-dreame-l10s-ultra/` | trim-gemini | en | 67 | 58 | 97 |
+| pixinstant | `/en/comparatif/instax-mini-vs-instax-wide/` | trim-gemini | en | 68 | 57 | 77 |
+| pixinstant | `/en/comparatif/instax-mini-12-vs-polaroid-go-gen2/` | trim-gemini | en | 66 | 54 | 49 |
+| matelas | `/comparatif/meilleurs-oreillers-ergonomiques-2026/` | trim-rule (pipe_drop) | fr | 67 | 48 | 36 |
+| matelas | `/comparatif/meilleurs-matelas-memoire-de-forme-2026/` | trim-rule (pipe_drop) | fr | 64 | 50 | 35 |
+| matelas | `/en/comparatif/meilleurs-matelas-mal-de-dos-2026/` | trim-rule (pipe_drop) | en | 74 | 44 | 35 |
+| aspirateur | `/es/comparatif/mejores-aspiradoras-2026/` | trim-rule (pipe_drop) | es | 66 | 40 | 35 |
+| matelas | `/en/comparatif/meilleurs-matelas-orthopedique-2026/` | trim-rule (pipe_drop) | en | 71 | 41 | 32 |
+| matelas | `/en/test/tediber-avis-test/` | trim-gemini | en | 74 | 52 | 32 |
+| aspirateur | `/en/comparatif/best-robot-vacuums-2026/` | trim-rule (pipe_drop) | en | 77 | 60 | 29 |
+| pixinstant | `/en/guide/best-instax-mini-films-2026/` | trim-rule (pipe_drop) | en | 66 | 57 | 29 |
+| pixinstant | `/guide/comment-savoir-si-film-instax-perime/` | trim-rule (dash_drop) | fr | 62 | 45 | 29 |
+| bureau | `/comparatif/meilleure-chaise-ergonomique-moins-300-euros/` | trim-rule (boilerplate) | fr | 63 | 42 | 28 |
+| matelas | `/en/comparatif/meilleurs-matelas-premium-2026/` | trim-gemini | en | 65 | 56 | 27 |
+
+Cohort 4 composition: 11 rule-based (incl. 1 dash_drop — first cohort use of the new rule) + 4 trim-gemini.
+
+## Combined cohort totals (cohorts 1+2+3+4)
+
+- **57 changes** across 4 sites (matelas 27, pixinstant 20, aspirateur 6, bureau 4)
+- 33 trim-rule + 21 trim-gemini + 1 CTR-variant + 2 excluded by self-critic
+- Total pre-change weekly impressions ≈ 3,200
+
 ## Exclusions
 
 - Brewmance: canonical recovery window through 2026-06-07 — re-evaluate after.
