@@ -206,6 +206,33 @@ def test_validator_rejects_entity_loss_via_slug():
     print("✓ validator rejects when slug entities lost from output")
 
 
+def test_validator_cross_lingual_fallback():
+    """Slug in FR, title in IT — slug-entities won't appear in IT output.
+
+    Before fix: rejected because "mouture" (FR) not in "Macinatura" (IT).
+    After fix: accepted because the original IT title contained "Macinatura"
+    and the candidate IT output also contains "Macinatura".
+    """
+    ok, reason = _validate_gemini_output(
+        "Guida alla Macinatura del Caffè 2026: il Caffè Perfetto a Casa",
+        "Guida alla Macinatura del Caffè 2026: il Caffè Perfetto",
+        slug="guide-mouture-cafe",
+    )
+    assert ok, f"FAIL: cross-lingual rewrite rejected: {reason}"
+    print("✓ validator accepts cross-lingual rewrites when original-title signal survives")
+
+
+def test_validator_cross_lingual_still_rejects_brand_loss():
+    """Even with cross-lingual fallback, losing the brand should reject."""
+    ok, reason = _validate_gemini_output(
+        "Tediber Bewertung 2026: Vollständiger Test des französischen Matratzenherstellers",
+        "Matratzentest 2026: Eine vollständige Bewertung",
+        slug="test-tediber",
+    )
+    assert not ok, "FAIL: brand loss should be detected even cross-lingual"
+    print("✓ validator still rejects brand loss cross-lingual")
+
+
 def test_dash_drop_handles_em_dash_and_hyphen():
     """Many FR titles use ' - ' or ' — ' instead of pipe."""
     cases = [
@@ -274,6 +301,8 @@ if __name__ == "__main__":
         test_slug_entities_strips_filler,
         test_validator_uses_slug_entities_when_first_word_is_verb,
         test_validator_rejects_entity_loss_via_slug,
+        test_validator_cross_lingual_fallback,
+        test_validator_cross_lingual_still_rejects_brand_loss,
         test_dash_drop_handles_em_dash_and_hyphen,
         test_dash_drop_only_separator_not_compounds,
         test_hook_loss_set,

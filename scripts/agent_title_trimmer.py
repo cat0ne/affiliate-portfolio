@@ -374,19 +374,28 @@ def _validate_gemini_output(
     out_years = set(re.findall(r"\b(20\d{2})\b", candidate))
     if in_years and not in_years & out_years:
         return False, f"year_drift:{in_years}->{out_years}"
-    # Entity preservation. Old approach: require first alphabetic token to
-    # survive. That rejected valid rewrites when the first word is a verb
-    # ("Wie", "Allestire", "Comment") or article. New approach: if the
-    # caller supplies the slug, derive entity candidates from it (more
-    # reliable proper-noun source) and require at least one to survive.
-    # Fall back to first-token logic only when no slug is available.
+    # Entity preservation. The slug carries proper-noun candidates that
+    # SHOULD survive a rewrite IF the page is in the slug's language (the
+    # common case). For translated pages (FR slug, IT/DE/ES title), slug
+    # entities are in the wrong language and won't appear in either the
+    # original or the rewrite — they aren't a useful constraint there.
+    #
+    # Heuristic: only enforce a slug entity if it ALSO appears in the
+    # ORIGINAL TITLE (case-insensitive). That keeps the strict check for
+    # brand-loss drift ("Tediber Bewertung 2026" must keep "tediber") while
+    # silently skipping cross-lingual mismatches ("mouture" in slug but
+    # not in the IT original).
     out_lower = candidate.lower()
+    orig_lower = original.lower()
     if slug:
-        entities = _slug_entities(slug)
-        if entities:
-            if not any(e in out_lower for e in entities):
-                return False, f"entity_lost:{entities[0]}"
-            return True, ""
+        all_entities = _slug_entities(slug)
+        present_in_orig = [e for e in all_entities if e in orig_lower]
+        if present_in_orig:
+            if any(e in out_lower for e in present_in_orig):
+                return True, ""
+            return False, f"entity_lost:{present_in_orig[0]}"
+        # Slug entities don't appear in original (cross-lingual translation
+        # or generic slug). Skip slug check entirely and fall through.
     in_tokens = re.findall(r"[A-Za-zÀ-ÿ]+", original)
     if in_tokens:
         first = in_tokens[0]
