@@ -253,13 +253,26 @@ def _try_boilerplate_strip(title: str) -> Optional[str]:
 # Currency + amount: "€899", "$649", "£300"
 HOOK_CURRENCY_RE = re.compile(r"[€$£]\s*\d+")
 # Specific-claim numerics: "3 Flaws", "12 Tested", "7 Real Differences" — single
-# or multi-digit count followed by a value noun. Excludes "100 Nights" baseline
-# (which appears in nearly all matelas titles).
+# or multi-digit count followed by a value noun. Time-unit nouns ("30 Days",
+# "100 Nights", "100 Nuits", "100 Nächte") are also value-prop hooks that
+# survive trimming should be preserved (otherwise pipe_drop silently drops
+# "Relieves Pain in 30 Days" with no escalation).
 HOOK_NUMBER_NOUN_RE = re.compile(
     r"\b(\d+)\s+("
+    # Value/claim nouns
     r"Flaws?|Hidden|Reasons?|Steps?|Tested|Tips?|Ways?|Real|Best|Top|"
     r"Differences?|Defauts?|Defects?|Pi[èe]ges?|Erreurs?|Astuces?|Conseils?|"
-    r"Verdades?|Errori|Trucchi"
+    r"Verdades?|Errori|Trucchi|"
+    # Time units — English
+    r"Days?|Nights?|Hours?|Weeks?|Months?|Years?|Minutes?|"
+    # Time units — French  (Mois / Ans invariant; Ans? handles "an"/"ans")
+    r"Jours?|Nuits?|Heures?|Semaines?|Mois|Ann[ée]es?|Ans?|"
+    # Time units — German (Nacht/Nächte enumerated to avoid "Nächt" partial)
+    r"Tage?|Nacht|Nächte|Stunden?|Wochen?|Monate?|Jahre?|"
+    # Time units — Spanish
+    r"Días?|Noches?|Horas?|Semanas?|Meses?|Años?|"
+    # Time units — Italian (singular+plural enumerated; avoids "Or"/"Mes" false matches)
+    r"Giorno|Giorni|Notte|Notti|Ora|Ore|Settimana|Settimane|Mese|Mesi|Anno|Anni"
     r")\b",
     re.IGNORECASE,
 )

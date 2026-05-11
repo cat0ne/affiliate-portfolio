@@ -274,6 +274,54 @@ def test_colon_drop_with_floor():
     print(f"✓ colon_drop with floor: strategy={strategy}, result={'(none)' if not proposed else proposed}")
 
 
+def test_hook_detection_time_units_en():
+    """Time-unit nouns ('30 Days', '100 Nights') are value-prop hooks."""
+    hooks = _hooks_in("Tested 30 Days of Comfort | 100 Nights Trial")
+    assert any(h[0] == "num_noun" and h[1] == "30_day" for h in hooks), (
+        f"FAIL: '30 Days' not detected: {hooks}"
+    )
+    assert any(h[0] == "num_noun" and h[1] == "100_night" for h in hooks), (
+        f"FAIL: '100 Nights' not detected: {hooks}"
+    )
+    print("✓ hook detection: English time units (Days / Nights)")
+
+
+def test_hook_detection_time_units_multi_lingual():
+    """French 'Nuits', German 'Nächte' (with umlaut), Italian 'Giorni' detected."""
+    fr_hooks = _hooks_in("Test Matelas 2026 : 100 Nuits d'Essai")
+    assert any(h[0] == "num_noun" and h[1] == "100_nuit" for h in fr_hooks), (
+        f"FAIL: French '100 Nuits' not detected: {fr_hooks}"
+    )
+    de_hooks = _hooks_in("Matratzentest 2026: 100 Nächte Probeschlafen")
+    assert any(h[0] == "num_noun" and h[1] == "100_nächte" for h in de_hooks), (
+        f"FAIL: German '100 Nächte' (umlaut) not detected: {de_hooks}"
+    )
+    it_hooks = _hooks_in("Test Materasso 2026: 30 Giorni di Prova")
+    assert any(h[0] == "num_noun" and h[1] == "30_giorni" for h in it_hooks), (
+        f"FAIL: Italian '30 Giorni' not detected: {it_hooks}"
+    )
+    print("✓ hook detection: multi-lingual time units (FR Nuits / DE Nächte / IT Giorni)")
+
+
+def test_back_pain_case_now_escalates():
+    """Cohort 4 case: pipe_drop must be flagged as hook-loss (30 Days vanishes).
+
+    Before fix: '30 Days' didn't match num_noun regex → silent drop.
+    After fix: _hook_loss detects '30_day' is gone → would trigger escalation.
+    """
+    original = "Best Mattresses for Back Pain 2026: 7 Tested | #1 Relieves Pain in 30 Days"
+    pipe_drop = "Best Mattresses for Back Pain 2026: 7 Tested"
+    lost = _hook_loss(original, pipe_drop)
+    assert any(h[0] == "num_noun" and h[1] == "30_day" for h in lost), (
+        f"FAIL: '30 Days' hook loss not detected: lost={lost}"
+    )
+    # The keep hook ("7 Tested") is preserved on both sides — should NOT appear in loss
+    assert not any(h[0] == "num_noun" and h[1] == "7_tested" for h in lost), (
+        f"FAIL: '7 Tested' incorrectly flagged as lost: {lost}"
+    )
+    print(f"✓ back-pain cohort 4 case: '30 Days' loss now detected ({len(lost)} hook(s) lost)")
+
+
 def test_fully_unsplittable_falls_through():
     # No paren, no pipe, no colon — all rules fail. Should reach gemini or return None.
     title = "An Extremely Long Title Without Any Splittable Punctuation Markers Whatsoever Here"
@@ -306,6 +354,9 @@ if __name__ == "__main__":
         test_dash_drop_handles_em_dash_and_hyphen,
         test_dash_drop_only_separator_not_compounds,
         test_hook_loss_set,
+        test_hook_detection_time_units_en,
+        test_hook_detection_time_units_multi_lingual,
+        test_back_pain_case_now_escalates,
         test_colon_drop_with_floor,
         test_fully_unsplittable_falls_through,
     ]
