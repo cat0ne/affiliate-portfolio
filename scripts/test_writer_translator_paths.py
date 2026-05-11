@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Regression tests for resolve_mdx_path multi-content-dir support.
 
-Covers both agent_writer.resolve_mdx_path and agent_translator.resolve_mdx_path.
+Covers agent_writer.resolve_mdx_path, agent_translator.resolve_mdx_path, and
+agent_reviewer.resolve_mdx_path (all three share the same locale-safety
+algorithm — kept in lockstep so reviewer feedback matches writer/translator
+behaviour).
 
 Live filesystem state verified 2026-05-11 (same fixtures as test_mdx_lookup.py):
   - matelas/bureau/cafe:  parallel layout (content/ + content-<loc>/)
@@ -11,6 +14,7 @@ Live filesystem state verified 2026-05-11 (same fixtures as test_mdx_lookup.py):
 Before the fix, the terminal `repo.rglob("*.mdx")` fallback could return a
 sibling-locale file (e.g. a FR article when an EN slug was requested), which
 the writer/translator would then read + overwrite with wrong-language content.
+The reviewer's bug was lower-impact (read-only feedback) but the same shape.
 """
 from __future__ import annotations
 
@@ -22,6 +26,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from agent_writer import BASE_DIR as WRITER_BASE_DIR
 from agent_writer import resolve_mdx_path as writer_resolve
 from agent_translator import resolve_mdx_path as translator_resolve
+from agent_reviewer import resolve_mdx_path as reviewer_resolve
 
 
 # (label, site_slug, article_slug, locale, expected_relative_or_None)
@@ -272,6 +277,119 @@ def test_isolated_no_rglob_fallback_leak() -> bool:
         return ok
 
 
+def test_reviewer_existing_file_correct_locale_parallel() -> bool:
+    """Reviewer must resolve EN slug to content-en/ on matelas (parallel)."""
+    return _check(
+        "reviewer: matelas EN → content-en/",
+        reviewer_resolve,
+        "matelas", "test-emma-original", "en",
+        "matelas/content-en/tests/test-emma-original.mdx",
+    )
+
+
+def test_reviewer_existing_file_correct_locale_nested() -> bool:
+    """Reviewer must resolve EN slug to content/en/ on pixinstant (nested)."""
+    return _check(
+        "reviewer: pixinstant EN → content/en/",
+        reviewer_resolve,
+        "pixinstant", "test-polaroid-go-gen2", "en",
+        "pixinstant/content/en/tests/test-polaroid-go-gen2.mdx",
+    )
+
+
+def test_reviewer_default_locale_no_cross_locale_leak() -> bool:
+    """Reviewer FR on a shared slug must return content/ not content-en/."""
+    got = reviewer_resolve("matelas", "tediber-avis-test", "fr")
+    if got is None:
+        print(f"  ✗ reviewer: matelas FR resolve returned None unexpectedly")
+        return False
+    got_str = str(got.resolve())
+    ok = "/matelas/content/tests/tediber-avis-test.mdx" in got_str and "content-en" not in got_str
+    marker = "✓" if ok else "✗"
+    print(f"  {marker} reviewer: matelas FR resolve → content/ not content-en/")
+    if not ok:
+        print(f"      got: {got_str}")
+    return ok
+
+
+def test_reviewer_pixinstant_default_no_nested_locale_leak() -> bool:
+    """Reviewer FR on pixinstant shared slug must NOT return content/en/."""
+    got = reviewer_resolve("pixinstant", "test-polaroid-go-gen2", "fr")
+    if got is None:
+        print(f"  ✗ reviewer: pixinstant FR resolve returned None unexpectedly")
+        return False
+    try:
+        rel = got.resolve().relative_to((WRITER_BASE_DIR / "pixinstant/content").resolve()).parts
+        first_seg = rel[0] if rel else ""
+    except ValueError:
+        first_seg = ""
+    ok = first_seg not in {"en", "de", "es", "it", "uk", "ja"}
+    marker = "✓" if ok else "✗"
+    print(f"  {marker} reviewer: pixinstant FR resolve → not under content/<locale>/")
+    if not ok:
+        print(f"      got: {got}")
+    return ok
+
+
+def test_reviewer_aspirateur_es_nested_layout() -> bool:
+    """Reviewer ES slug on aspirateur lives in content/es/ (nested), not content-es/."""
+    got = reviewer_resolve("aspirateur", "mejores-aspiradoras-sin-cable-2026", "es")
+    expected = (WRITER_BASE_DIR / "aspirateur/content/es/comparatifs/mejores-aspiradoras-sin-cable-2026.mdx").resolve()
+    ok = got is not None and got.resolve() == expected
+    marker = "✓" if ok else "✗"
+    print(f"  {marker} reviewer: aspirateur ES → content/es/")
+    if not ok:
+        print(f"      expected: {expected}")
+        print(f"      got:      {got}")
+    return ok
+
+
+def test_reviewer_nonexistent_slug_returns_none() -> bool:
+    """Reviewer on a slug that doesn't exist anywhere must return None (no rglob fallback)."""
+    got = reviewer_resolve("matelas", "this-slug-does-not-exist-anywhere-2026-05-11", "en")
+    ok = got is None
+    marker = "✓" if ok else "✗"
+    print(f"  {marker} reviewer: nonexistent slug → None")
+    if not ok:
+        print(f"      got: {got}")
+    return ok
+
+
+def test_reviewer_isolated_no_rglob_fallback_leak() -> bool:
+    """Synthetic fixture: EN-only slug under content-en/, FR resolve must return None.
+
+    Mirrors the writer/translator isolated test. Proves the killed
+    `repo.rglob("*.mdx")` cross-locale fallback can't silently return
+    content-en/<slug>.mdx when locale=fr is requested by the reviewer.
+    """
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        repo = Path(tmp) / "fakesite"
+        (repo / "content" / "tests").mkdir(parents=True)
+        (repo / "content-en" / "tests").mkdir(parents=True)
+        (repo / "content-en" / "tests" / "en-only-product.mdx").write_text("# en", encoding="utf-8")
+
+        from agent_reviewer import SITES as R_SITES
+
+        fake_cfg = {"repo_path": repo, "default_locale": "fr"}
+        R_SITES["__fake__"] = fake_cfg
+        try:
+            r_fr = reviewer_resolve("__fake__", "en-only-product", "fr")
+            r_en = reviewer_resolve("__fake__", "en-only-product", "en")
+        finally:
+            R_SITES.pop("__fake__", None)
+
+        ok_fr = r_fr is None
+        ok_en = r_en is not None and "content-en" in str(r_en)
+        ok = ok_fr and ok_en
+        marker = "✓" if ok else "✗"
+        print(f"  {marker} reviewer isolated fixture: EN-only slug → FR=None, EN=content-en/")
+        if not ok:
+            print(f"      reviewer FR: {r_fr} (want None)  EN: {r_en} (want content-en/)")
+        return ok
+
+
 TESTS = [
     test_writer_resolves_correct_locale_parallel,
     test_writer_resolves_correct_locale_nested,
@@ -284,12 +402,19 @@ TESTS = [
     test_translator_nonexistent_slug_returns_none,
     test_aspirateur_es_nested_layout,
     test_isolated_no_rglob_fallback_leak,
+    test_reviewer_existing_file_correct_locale_parallel,
+    test_reviewer_existing_file_correct_locale_nested,
+    test_reviewer_default_locale_no_cross_locale_leak,
+    test_reviewer_pixinstant_default_no_nested_locale_leak,
+    test_reviewer_aspirateur_es_nested_layout,
+    test_reviewer_nonexistent_slug_returns_none,
+    test_reviewer_isolated_no_rglob_fallback_leak,
 ]
 
 
 def run() -> int:
     print("=" * 70)
-    print("Writer/Translator resolve_mdx_path locale-safety tests")
+    print("Writer/Translator/Reviewer resolve_mdx_path locale-safety tests")
     print("=" * 70)
     print()
     passes = 0

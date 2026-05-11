@@ -13,7 +13,7 @@ After fixing `agent_ctr_optimizer.py:_find_mdx_for_url` to handle both parallel 
 | `agent_seo_auditor.py` | `find_mdx_files` | Partial (auto-fix path) | high | deferred |
 | `agent_writer.py` | `resolve_mdx_path` | Partial (fallback `rglob("*.mdx")`) | high | **fixed** (this commit) |
 | `agent_translator.py` | `resolve_mdx_path` | Partial (fallback `rglob("*.mdx")`) | high | **fixed** (this commit) |
-| `agent_reviewer.py` | `resolve_mdx_path` | Partial (fallback `rglob("*.mdx")`) | low (read-only analysis) | deferred |
+| `agent_reviewer.py` | `resolve_mdx_path` | Partial (fallback `rglob("*.mdx")`) | low (read-only analysis) | **fixed** (this commit) |
 | `agent_syndication.py` | `_mdx_inventory` | Partial (post-filters correctly) | low (queues events; doesn't write) | deferred |
 
 ## Concrete impact of the url_health fix
@@ -41,7 +41,11 @@ Bonus: old code recursed into `node_modules`, which is why matelas's rglob retur
 - For monorepo sites, scope rglob to `content/*/<loc>/**` so an EN resolve cannot return a JA file.
 - Caller sites verified: both `process_event` and `process_events_parallel` in writer, plus `process_event`/CLI test in translator, all pass `locale_hint` from the event payload. No caller changes needed.
 
-Coverage: `scripts/test_writer_translator_paths.py` — 11 tests including a synthetic-fixture test that proves the fallback is dead.
+Coverage: `scripts/test_writer_translator_paths.py` — 18 tests including synthetic-fixture tests that prove the fallback is dead for writer, translator, and reviewer.
+
+## Follow-up: `agent_reviewer.py` fix
+
+Same shape as writer/translator: dropped the cross-locale `repo.rglob("*.mdx")` terminal fallback, added parallel + nested layout search, exclude `content/<other-locale>/` subtrees on default-locale resolution, and scope monorepo rglob to `content/*/<loc>/**`. Reviewer is read-only so production harm was low (wrong-locale feedback is ignored or causes a confusing review note), but consistency across the three agents is worth the small change. Caller verified: single call site at `process_event` already passes `locale` from the event payload.
 
 ## `agent_cro_optimizer.py` — false positive from audit
 
