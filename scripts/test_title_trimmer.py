@@ -10,7 +10,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from agent_title_trimmer import MIN_LEN, TITLE_LIMIT, _validate_gemini_output, trim_title
+from agent_title_trimmer import (
+    MIN_LEN, TITLE_LIMIT,
+    _hook_loss, _hooks_in, _score_candidate,
+    _validate_gemini_output, trim_title,
+)
 
 
 def assert_trimmed(title: str, locale: str, want_strategy_in: set[str], max_len: int = TITLE_LIMIT):
@@ -106,6 +110,50 @@ def test_gemini_validator_rejects_entity_loss():
     print("✓ Gemini validator rejects entity loss")
 
 
+def test_hook_detection_currency():
+    hooks = _hooks_in("Morphea Jade 2026: Worth €899? Tested")
+    assert any(h[0] == "currency" for h in hooks), f"FAIL: no currency hook in {hooks}"
+    assert any(h[0] == "intrigue" for h in hooks), f"FAIL: no intrigue hook in {hooks}"
+    print("✓ hook detection: currency + intrigue")
+
+
+def test_hook_detection_number_noun():
+    hooks = _hooks_in("Emma Original Review 2026: 100-Night Test | 3 Flaws Sellers Hide")
+    # "3 Flaws" is a num_noun hook
+    assert any(h[0] == "num_noun" and h[1] == "3_flaw" for h in hooks), f"FAIL: {hooks}"
+    print("✓ hook detection: numeric + noun")
+
+
+def test_score_penalizes_hook_loss():
+    original = "Emma Original Review 2026: 100-Night Test | 3 Flaws Sellers Hide"
+    # Pipe-drop result loses "3 Flaws Sellers Hide"
+    lossy = "Emma Original Review 2026: 100-Night Test"
+    # Hypothetical hook-preserving rewrite
+    keepy = "Emma Original 2026: 100-Night Test + 3 Hidden Flaws"
+    s_lossy = _score_candidate(lossy, original)
+    s_keepy = _score_candidate(keepy, original)
+    assert s_keepy > s_lossy, f"FAIL: keepy should score higher: {s_keepy} <= {s_lossy}"
+    print(f"✓ score penalizes hook loss: keepy={s_keepy} > lossy={s_lossy}")
+
+
+def test_score_penalizes_year_loss():
+    original = "Tediber Review 2026: French Mattress Worth €899?"
+    no_year = "Tediber Review: French Mattress"
+    s = _score_candidate(no_year, original)
+    s_with_year = _score_candidate("Tediber Review 2026", original)
+    assert s_with_year > s, f"FAIL: year-preserving should score higher: {s_with_year} <= {s}"
+    print(f"✓ score penalizes year loss")
+
+
+def test_hook_loss_set():
+    original = "Morphea Jade Test 2026: 100 Nights | French Craftsmanship Worth €899?"
+    pipe_drop = "Morphea Jade Test 2026: 100 Nights"
+    lost = _hook_loss(original, pipe_drop)
+    # "€899" lost, "Worth €899?" intrigue lost
+    assert any(h[0] == "currency" for h in lost), f"FAIL: currency not in lost: {lost}"
+    print(f"✓ hook_loss detects dropped currency hooks ({len(lost)} hooks lost)")
+
+
 def test_colon_drop_with_floor():
     """Original 67 chars, head after colon drop is 23 chars — below MIN_LEN.
     Should NOT trim (under floor), fall through to next rule or no_strategy."""
@@ -136,6 +184,11 @@ if __name__ == "__main__":
         test_colon_drop_preserves_entity,
         test_gemini_validator_rejects_year_drift,
         test_gemini_validator_rejects_entity_loss,
+        test_hook_detection_currency,
+        test_hook_detection_number_noun,
+        test_score_penalizes_hook_loss,
+        test_score_penalizes_year_loss,
+        test_hook_loss_set,
         test_colon_drop_with_floor,
         test_fully_unsplittable_falls_through,
     ]

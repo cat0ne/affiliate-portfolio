@@ -232,6 +232,86 @@ def _try_boilerplate_strip(title: str) -> Optional[str]:
     return None
 
 
+# ---------------------------------------------------------------------------
+# Hook detection — phrases that drive CTR
+# ---------------------------------------------------------------------------
+
+# Currency + amount: "€899", "$649", "£300"
+HOOK_CURRENCY_RE = re.compile(r"[€$£]\s*\d+")
+# Specific-claim numerics: "3 Flaws", "12 Tested", "7 Real Differences" — single
+# or multi-digit count followed by a value noun. Excludes "100 Nights" baseline
+# (which appears in nearly all matelas titles).
+HOOK_NUMBER_NOUN_RE = re.compile(
+    r"\b(\d+)\s+("
+    r"Flaws?|Hidden|Reasons?|Steps?|Tested|Tips?|Ways?|Real|Best|Top|"
+    r"Differences?|Defauts?|Defects?|Pi[èe]ges?|Erreurs?|Astuces?|Conseils?|"
+    r"Verdades?|Errori|Trucchi"
+    r")\b",
+    re.IGNORECASE,
+)
+# Intrigue cues that pull clicks: "Worth €X?", "Hidden", "Truth", "Revealed"
+HOOK_INTRIGUE_RE = re.compile(
+    r"\b("
+    r"worth\s+[€$£]?\s*\d+|"
+    r"cheaper\s+than|"
+    r"hidden|revealed|truth|honest|"
+    r"que\s+les\s+avis|cachent?|"
+    r"price|where\s+to\s+buy|money[-\s]?saving"
+    r")\b",
+    re.IGNORECASE,
+)
+
+
+def _hooks_in(text: str) -> set[str]:
+    """Return the set of hook strings present in text (lowercased, normalized)."""
+    if not text:
+        return set()
+    hooks: set[str] = set()
+    for m in HOOK_CURRENCY_RE.finditer(text):
+        hooks.add(("currency", m.group(0).replace(" ", "").lower()))
+    for m in HOOK_NUMBER_NOUN_RE.finditer(text):
+        # Normalize: count + noun-stem
+        count, noun = m.group(1), m.group(2).lower().rstrip("s")
+        hooks.add(("num_noun", f"{count}_{noun}"))
+    for m in HOOK_INTRIGUE_RE.finditer(text):
+        hooks.add(("intrigue", m.group(0).lower().strip()))
+    return hooks  # type: ignore[return-value]
+
+
+def _hook_loss(original: str, candidate: str) -> set:
+    """Hooks present in original but missing in candidate."""
+    return _hooks_in(original) - _hooks_in(candidate)
+
+
+def _score_candidate(candidate: str, original: str) -> float:
+    """Score a trim candidate. Higher = better. Used for critic ranking."""
+    if not candidate:
+        return -100.0
+    score = 0.0
+    # Length: prefer trims near TITLE_LIMIT (max real estate)
+    n = len(candidate)
+    score += (n / TITLE_LIMIT) * 4.0  # up to 4 points for hitting 60
+    # Year preservation
+    orig_years = set(re.findall(r"\b20\d{2}\b", original))
+    cand_years = set(re.findall(r"\b20\d{2}\b", candidate))
+    if orig_years and orig_years.issubset(cand_years):
+        score += 2.0
+    elif orig_years and not cand_years:
+        score -= 3.0  # severe: year lost
+    # Hook preservation
+    lost = _hook_loss(original, candidate)
+    if lost:
+        # Each lost hook is a big penalty — especially currency / number-noun
+        for h_type, _ in lost:
+            if h_type == "currency":
+                score -= 3.0
+            elif h_type == "num_noun":
+                score -= 2.5
+            else:
+                score -= 1.0
+    return round(score, 2)
+
+
 def _validate_gemini_output(original: str, candidate: str) -> tuple[bool, str]:
     """Reject candidates that hallucinate years or drop the entity.
 
@@ -259,7 +339,11 @@ def _validate_gemini_output(original: str, candidate: str) -> tuple[bool, str]:
     return True, ""
 
 
-def _try_gemini_trim(title: str, locale: str) -> Optional[str]:
+def _try_gemini_trim(
+    title: str,
+    locale: str,
+    hooks_to_keep: Optional[set] = None,
+) -> Optional[str]:
     if not GEMINI_API_KEY:
         return None
     try:
@@ -273,11 +357,28 @@ def _try_gemini_trim(title: str, locale: str) -> Optional[str]:
         f" The year {in_years[0]} MUST appear verbatim — do not change or omit it."
         if in_years else ""
     )
+    # Extract concrete hook strings from the original to instruct Gemini
+    hook_phrases: list[str] = []
+    if hooks_to_keep:
+        # Pull literal substrings matching these hooks from the original
+        for m in HOOK_CURRENCY_RE.finditer(title):
+            hook_phrases.append(m.group(0).strip())
+        for m in HOOK_NUMBER_NOUN_RE.finditer(title):
+            hook_phrases.append(m.group(0).strip())
+        for m in HOOK_INTRIGUE_RE.finditer(title):
+            hook_phrases.append(m.group(0).strip())
+    hook_constraint = ""
+    if hook_phrases:
+        joined = ", ".join(f'"{h}"' for h in hook_phrases[:5])
+        hook_constraint = (
+            f" The following hook phrases MUST be preserved in the trimmed "
+            f"title (verbatim or with minor inflection): {joined}."
+        )
     prompt = (
         f"Rewrite this SEO title to be at most {TITLE_LIMIT} characters while "
         f"preserving the brand/entity name and the core value proposition. "
-        f"Stay in {lang}.{year_constraint} Reply with ONLY the rewritten title, "
-        f"no quotes or explanation.\n\nOriginal: {title}"
+        f"Stay in {lang}.{year_constraint}{hook_constraint} Reply with ONLY "
+        f"the rewritten title, no quotes or explanation.\n\nOriginal: {title}"
     )
     body = json.dumps({
         "contents": [{"parts": [{"text": prompt}]}],
@@ -319,15 +420,20 @@ def trim_title(
 ) -> tuple[Optional[str], str, list[str]]:
     """Return (proposed, strategy, rule_chain).
 
-    Try all rule-based strategies, return the LONGEST acceptable candidate
-    (preserves the most signal). Gemini fallback only when use_gemini=True
-    and no rule produces an in-range trim — opt-in to avoid API spend.
+    Self-critic pipeline:
+      1. Generate all rule-based candidates.
+      2. Score each by length proximity to TITLE_LIMIT minus penalties for
+         dropped hooks (currency, "N Flaws", "Worth €X?") and dropped years.
+      3. If the best rule-based candidate has hook loss AND use_gemini=True,
+         also generate a Gemini candidate with explicit hook preservation,
+         then return whichever scores higher.
+      4. If no rule produces an acceptable trim, try Gemini outright.
     """
     if len(title) <= TITLE_LIMIT:
         return None, "no_op", []
 
     chain: list[str] = []
-    candidates: list[tuple[str, str]] = []
+    rule_candidates: list[tuple[str, str, float]] = []
 
     for name, fn in [
         ("boilerplate", _try_boilerplate_strip),
@@ -338,20 +444,45 @@ def trim_title(
         chain.append(name)
         result = fn(title)
         if result:
-            candidates.append((name, result))
+            rule_candidates.append((name, result, _score_candidate(result, title)))
 
-    if candidates:
-        # Longest acceptable trim wins — preserves the most SERP-visible signal.
-        candidates.sort(key=lambda x: -len(x[1]))
-        strategy, result = candidates[0]
-        return result, strategy, chain
+    # Best rule by score
+    best_rule = max(rule_candidates, key=lambda x: x[2]) if rule_candidates else None
 
-    if use_gemini:
+    # Escalation triggers: no rule worked, hook loss, year loss, or low score.
+    def _should_escalate(cand_text: str) -> bool:
+        if _hook_loss(title, cand_text):
+            return True
+        orig_years = set(re.findall(r"\b20\d{2}\b", title))
+        cand_years = set(re.findall(r"\b20\d{2}\b", cand_text))
+        if orig_years and not orig_years & cand_years:
+            return True
+        return _score_candidate(cand_text, title) < 1.5
+
+    should_try_gemini = use_gemini and (
+        best_rule is None
+        or _should_escalate(best_rule[1])
+    )
+
+    gemini_candidate: Optional[tuple[str, float]] = None
+    if should_try_gemini:
         chain.append("gemini")
-        g = _try_gemini_trim(title, locale)
+        # Tell Gemini what hooks it must keep
+        lost_in_best = _hook_loss(title, best_rule[1]) if best_rule else _hooks_in(title)
+        g = _try_gemini_trim(title, locale, hooks_to_keep=lost_in_best)
         if g:
-            return g, "gemini", chain
+            gemini_candidate = (g, _score_candidate(g, title))
 
+    # Choose winner
+    if best_rule and gemini_candidate:
+        # Both available — pick higher score, tie-break to rule (no API cost)
+        if gemini_candidate[1] > best_rule[2]:
+            return gemini_candidate[0], "gemini", chain
+        return best_rule[1], best_rule[0], chain
+    if best_rule:
+        return best_rule[1], best_rule[0], chain
+    if gemini_candidate:
+        return gemini_candidate[0], "gemini", chain
     return None, "no_strategy_worked", chain
 
 
