@@ -292,6 +292,51 @@ def _read_meta(mdx_path: Path) -> dict[str, str]:
 
 
 # ---------------------------------------------------------------------------
+# Guardrails (added 2026-05-11 after EN-template regressions on FR pages)
+# ---------------------------------------------------------------------------
+
+# Words that should NEVER appear in non-EN titles. If a variant for a FR/DE/ES/IT
+# page contains any of these, reject it — the LLM (or rule generator) drifted.
+EN_ONLY_TOKENS = (
+    "best", "tested", "ranked", "compared", "worth it", "honest", "ultimate",
+    "buyer's", "buyers guide", "expert", "proven", "definitive",
+)
+
+# Content types where a listicle-style title ("7 Best …", "Top 5 …") is wrong:
+# single-product test pages and how-to guides aren't lists.
+NON_LISTICLE_CONTENT_TYPES = {"test", "guide", "blog"}
+
+# Variant strategies that produce listicle-shape titles.
+LISTICLE_STRATEGIES = {"number_year"}
+
+
+def _validate_variant_for_locale(title: str, locale: str) -> tuple[bool, str]:
+    """Return (ok, reason). False means reject this variant."""
+    if not title:
+        return False, "empty"
+    if locale != "en":
+        low = title.lower()
+        for tok in EN_ONLY_TOKENS:
+            if tok in low:
+                return False, f"english_word_on_{locale}_page:{tok}"
+    return True, ""
+
+
+def _detect_content_type(mdx_path: Optional[Path], page_url: str) -> str:
+    """Read `type:` from frontmatter; fall back to URL segment inference."""
+    if mdx_path:
+        meta = _read_meta(mdx_path)
+        t = (meta.get("type") or "").strip().lower()
+        if t:
+            return t
+    parts = [p for p in page_url.lower().split("/") if p]
+    for p in parts:
+        if p in {"test", "guide", "comparatif", "blog", "avis"}:
+            return p
+    return ""
+
+
+# ---------------------------------------------------------------------------
 # Variant generators (rule-based; LLM optional)
 # ---------------------------------------------------------------------------
 
@@ -412,7 +457,13 @@ def keyword_from_slug(slug: str) -> str:
     return " ".join(parts[:5]).strip() or slug.replace("-", " ")
 
 
-def propose_variants(current_title: str, slug: str, page_path: str, locale: str = "fr") -> list[dict[str, Any]]:
+def propose_variants(
+    current_title: str,
+    slug: str,
+    page_path: str,
+    locale: str = "fr",
+    content_type: str = "",
+) -> list[dict[str, Any]]:
     keyword = keyword_from_slug(slug)
     variants = [
         {"name": "number_year", "title": variant_number_year(keyword, locale)},
@@ -422,11 +473,28 @@ def propose_variants(current_title: str, slug: str, page_path: str, locale: str 
     llm_v = llm_variant(current_title, page_path, locale)
     if llm_v:
         variants.append({"name": "llm", "title": llm_v})
+
+    # Guardrail 1: locale validity — drop variants with English-only tokens
+    # on non-EN pages (LLM is the most common offender here).
+    filtered: list[dict[str, Any]] = []
     for v in variants:
+        ok, reason = _validate_variant_for_locale(v["title"], locale)
+        if not ok:
+            v["rejected"] = reason
+            continue
+        filtered.append(v)
+
+    # Guardrail 2: content-type — listicle templates ("7 Best X") on a
+    # single-product test ("Emma Original Avis") read as nonsense to users
+    # and tank CTR further. Drop them.
+    if content_type in NON_LISTICLE_CONTENT_TYPES:
+        filtered = [v for v in filtered if v["name"] not in LISTICLE_STRATEGIES]
+
+    for v in filtered:
         v["score"] = score_variant(v["title"], locale)
         v["length"] = len(v["title"])
-    variants.sort(key=lambda v: -v["score"])
-    return variants
+    filtered.sort(key=lambda v: -v["score"])
+    return filtered
 
 
 # ---------------------------------------------------------------------------
@@ -480,6 +548,7 @@ def run_site(
     min_impressions: int,
     max_proposals: int,
     dry_run: bool,
+    apply: bool = False,
 ) -> dict[str, Any]:
     candidates = find_low_ctr_pages(site_slug, min_impressions=min_impressions, top_n=max_proposals * 2)
     print(f"  → {site_slug}: {len(candidates)} low-CTR candidate(s)")
@@ -491,7 +560,11 @@ def run_site(
         slug = _slug_from_url(c["page_path"])
         site_default = SITES.get(site_slug, {}).get("default_locale", "fr")
         locale = _detect_locale_from_url(c["page_path"], site_default=site_default)
-        variants = propose_variants(current_title, slug, c["page_path"], locale=locale)
+        content_type = _detect_content_type(mdx, c["page_path"])
+        variants = propose_variants(
+            current_title, slug, c["page_path"],
+            locale=locale, content_type=content_type,
+        )
         current_score = score_variant(current_title, locale)
         winner = next((v for v in variants if v["score"] > current_score + 0.5), None)
         proposal = {
@@ -499,6 +572,7 @@ def run_site(
             "page_path": c["page_path"],
             "slug": slug,
             "locale": locale,
+            "content_type": content_type,
             "mdx_path": str(mdx) if mdx else None,
             "current_title": current_title,
             "current_title_score": current_score,
@@ -511,7 +585,9 @@ def run_site(
             "recommended": winner,
         }
         proposals.append(proposal)
-        if winner and not dry_run:
+        # Guardrail 3: only emit Hermes events when --apply is explicitly set.
+        # Otherwise proposals stay in the queue file for human review.
+        if winner and apply and not dry_run:
             emit_event(
                 "cro.meta_variant_proposed",
                 {
@@ -562,32 +638,52 @@ def write_report(per_site: dict[str, dict[str, Any]], dry_run: bool) -> Path:
     return out
 
 
+def _write_proposal_queue(per_site: dict[str, dict[str, Any]]) -> Path:
+    """Persist proposals to a queue file for human review (Phase 1 guardrail)."""
+    queue_dir = REPORTS_DIR / "agent_queues" / "ctr_proposed"
+    queue_dir.mkdir(parents=True, exist_ok=True)
+    today = date.today().isoformat()
+    out = queue_dir / f"{today}.json"
+    payload = {
+        "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "agent": AGENT_NAME,
+        "sites": {s: data.get("proposals", []) for s, data in per_site.items()},
+    }
+    out.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"  📥 Proposals queued for review: {out}")
+    return out
+
+
 def run_daily(
     sites: Optional[list[str]] = None,
     min_impressions: int = 200,
     max_proposals: int = 10,
     dry_run: bool = False,
+    apply: bool = False,
 ) -> dict[str, Any]:
     sites = sites or list(SITES.keys())
     per_site: dict[str, dict[str, Any]] = {}
     total_proposals = 0
     for s in sites:
-        result = run_site(s, min_impressions, max_proposals, dry_run)
+        result = run_site(s, min_impressions, max_proposals, dry_run, apply=apply)
         per_site[s] = result
         total_proposals += len(result.get("proposals", []))
     out_path = write_report(per_site, dry_run)
+    queue_path = _write_proposal_queue(per_site)
     if not dry_run:
         emit_event(
             "ctr_optimizer.run_completed",
             {
                 "report_path": str(out_path),
+                "queue_path": str(queue_path),
                 "sites": sites,
                 "proposals": total_proposals,
+                "applied": apply,
             },
             priority=4,
             target_agent="agent-analytics",
         )
-    return {"per_site": per_site, "report_path": str(out_path)}
+    return {"per_site": per_site, "report_path": str(out_path), "queue_path": str(queue_path)}
 
 
 # ---------------------------------------------------------------------------
@@ -641,13 +737,24 @@ def main() -> int:
     parser.add_argument("--min-impressions", type=int, default=200)
     parser.add_argument("--max", type=int, default=10)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="Emit cro.meta_variant_proposed events. Default: queue-only (human-in-loop).",
+    )
     args = parser.parse_args()
     if args.consume:
         consume(limit=args.limit, dry_run=args.dry_run)
         return 0
     sites = [args.site] if args.site else None
     if args.daily or args.site:
-        run_daily(sites=sites, min_impressions=args.min_impressions, max_proposals=args.max, dry_run=args.dry_run)
+        run_daily(
+            sites=sites,
+            min_impressions=args.min_impressions,
+            max_proposals=args.max,
+            dry_run=args.dry_run,
+            apply=args.apply,
+        )
         return 0
     parser.print_help()
     return 0
