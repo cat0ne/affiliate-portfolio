@@ -93,6 +93,22 @@ def test_listicle_allowed_on_comparatif():
     print(f"✓ listicle preserved on comparatif page")
 
 
+def test_listicle_filtered_on_avis_page():
+    """Tediber EN avis page caught in live run 2026-05-11."""
+    variants = propose_variants(
+        current_title="Avis Tediber : notre opinion sur la marque française",
+        slug="tediber-avis-test",
+        page_path="https://matelas-expert.fr/en/avis/tediber-avis-test/",
+        locale="en",
+        content_type="avis",
+    )
+    names = {v["name"] for v in variants}
+    assert "number_year" not in names, (
+        f"FAIL: listicle should be filtered on type=avis, got: {names}"
+    )
+    print(f"✓ listicle filtered on avis page ({len(variants)} variants)")
+
+
 def test_full_regression_bureau_case():
     """Bureau FR comparatif: even rule-based variants must be FR."""
     variants = propose_variants(
@@ -116,6 +132,7 @@ if __name__ == "__main__":
         test_content_type_detection_from_url,
         test_listicle_filtered_on_test_page,
         test_listicle_allowed_on_comparatif,
+        test_listicle_filtered_on_avis_page,
         test_full_regression_bureau_case,
     ]
     failures = 0

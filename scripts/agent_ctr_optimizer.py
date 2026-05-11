@@ -303,8 +303,10 @@ EN_ONLY_TOKENS = (
 )
 
 # Content types where a listicle-style title ("7 Best …", "Top 5 …") is wrong:
-# single-product test pages and how-to guides aren't lists.
-NON_LISTICLE_CONTENT_TYPES = {"test", "guide", "blog"}
+# single-product test/avis pages and how-to guides aren't lists.
+# `avis` added 2026-05-11 after live run produced "7 Best Tediber for 2026" on
+# the Tediber EN avis page despite type-from-URL stamping `avis`.
+NON_LISTICLE_CONTENT_TYPES = {"test", "guide", "blog", "avis"}
 
 # Variant strategies that produce listicle-shape titles.
 LISTICLE_STRATEGIES = {"number_year"}
