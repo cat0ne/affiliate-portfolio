@@ -17,9 +17,10 @@ Auto-fix flow for dead ASINs:
   7. Update database
 
 Usage:
-    python3 agent_cro_optimizer.py --consume     # Process all pending events
-    python3 agent_cro_optimizer.py --daemon    # Run continuously (cron)
-    python3 agent_cro_optimizer.py --dry-run     # Preview changes, don't apply
+    python3 agent_cro_optimizer.py --consume
+    python3 agent_cro_optimizer.py --consume --apply-meta-variants
+    python3 agent_cro_optimizer.py --daemon
+    python3 agent_cro_optimizer.py --dry-run
 """
 
 import os
@@ -131,6 +132,29 @@ def emit_event(
     if target_agent:
         event["target_agent"] = target_agent
     return write_inbox_event_json(event, f"{event['id']}.json")
+
+
+def select_relevant_events(
+    event_items: list[tuple[Path, dict]],
+    *,
+    apply_meta_variants: bool = False,
+) -> tuple[list[tuple[Path, dict]], list[tuple[Path, dict]]]:
+    """Split inbox events into processable work and review-only meta proposals."""
+    selected: list[tuple[Path, dict]] = []
+    pending_meta: list[tuple[Path, dict]] = []
+    for event_file, event in event_items:
+        if not event:
+            continue
+        et = event.get("type")
+        ta = event.get("target_agent")
+        if ta not in (None, "agent-cro-optimizer"):
+            continue
+        if et == "cro.meta_variant_proposed" and not apply_meta_variants:
+            pending_meta.append((event_file, event))
+            continue
+        if et in ("price.asin_invalid", "cro.asin_missing_locale", "cro.meta_variant_proposed"):
+            selected.append((event_file, event))
+    return selected, pending_meta
 
 
 def patch_frontmatter_title(text: str, new_title: str, sync_meta: bool = True) -> str:
@@ -614,29 +638,36 @@ def process_asin_invalid_event(event: dict, dry_run: bool = False) -> dict:
     }
 
 
-def process_events(dry_run: bool = False, limit: int = None):
+def process_events(
+    dry_run: bool = False,
+    limit: int = None,
+    apply_meta_variants: bool = False,
+):
     """Process all pending events in the inbox."""
     ensure_dirs()
     paths = ensure_hermes_dirs()
 
     # Find relevant events (CRO agent only; ignore other agents' inbox noise)
-    events = []
+    event_items: list[tuple[Path, dict]] = []
     for f in list_inbox_json_sorted(paths):
         event = read_json_event(f)
-        if not event:
-            continue
-        et = event.get("type")
-        ta = event.get("target_agent")
-        if ta not in (None, "agent-cro-optimizer"):
-            continue
-        if et in ("price.asin_invalid", "cro.asin_missing_locale", "cro.meta_variant_proposed"):
-            events.append((f, event))
-    
+        if event:
+            event_items.append((f, event))
+
+    events, pending_meta = select_relevant_events(
+        event_items,
+        apply_meta_variants=apply_meta_variants,
+    )
     if limit:
         events = events[:limit]
-    
+
     print(f"📥 Found {len(events)} CRO-related events to process")
-    
+    if pending_meta and not apply_meta_variants:
+        print(
+            f"🛑 Left {len(pending_meta)} pending `cro.meta_variant_proposed` event(s) in Hermes for manual review"
+        )
+        print("   Re-run with --apply-meta-variants only after reviewing the queued recommendations.")
+
     results = []
     for event_file, event in events:
         print(f"\n{'='*50}")
@@ -689,11 +720,20 @@ def main():
     parser.add_argument("--consume", action="store_true", help="Process all pending events")
     parser.add_argument("--daemon", action="store_true", help="Run continuously")
     parser.add_argument("--dry-run", action="store_true", help="Preview changes without applying")
+    parser.add_argument(
+        "--apply-meta-variants",
+        action="store_true",
+        help="Allow cro.meta_variant_proposed events to patch MDX frontmatter. Default: keep them pending for human review.",
+    )
     parser.add_argument("--limit", type=int, help="Limit number of events to process")
     args = parser.parse_args()
     
     if args.consume or args.daemon:
-        process_events(dry_run=args.dry_run, limit=args.limit)
+        process_events(
+            dry_run=args.dry_run,
+            limit=args.limit,
+            apply_meta_variants=args.apply_meta_variants,
+        )
     else:
         parser.print_help()
 

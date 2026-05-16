@@ -169,6 +169,10 @@ jobs:
         continue-on-error: true
         run: python scripts/agent_title_trimmer.py
 
+      - name: Validate title trim queue (dry-run only)
+        continue-on-error: true
+        run: python scripts/apply_trim_queue.py --queue title --dry-run --top-n 10
+
       # Description trimmer: same pattern as title trimmer but for meta
       # descriptions >160 chars (Google SERP truncation). Strips harvested
       # boilerplate phrases, drops trailing arrow clauses, then sentences,
@@ -179,7 +183,14 @@ jobs:
         continue-on-error: true
         run: python scripts/agent_description_trimmer.py
 
-      - name: Run CRO optimizer consumer (apply CTR meta + ASIN events)
+      - name: Validate description trim queue (dry-run only)
+        continue-on-error: true
+        run: python scripts/apply_trim_queue.py --queue description --dry-run --top-n 10
+
+      # CRO consumer still applies ASIN repair events, but CTR meta variants
+      # remain review-only unless the operator explicitly passes
+      # --apply-meta-variants in a separate reviewed run.
+      - name: Run CRO optimizer consumer (ASIN apply only; meta stays reviewable)
         continue-on-error: true
         env:
           APIFY_API_TOKEN: ${{ secrets.APIFY_API_TOKEN }}
