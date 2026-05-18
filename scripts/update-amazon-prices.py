@@ -113,12 +113,12 @@ def creators_api_get_items(
     payload = {
         "itemIds": asins,
         "itemIdType": "ASIN",
+        "marketplace": marketplace,
+        "partnerTag": partner_tag,
         "resources": [
             "offersV2.listings.price",
             "itemInfo.title",
         ],
-        "partnerTag": partner_tag,
-        "partnerType": "Associates",
     }
 
     headers = {
@@ -152,8 +152,8 @@ def creators_api_search_items(
     endpoint = "https://creatorsapi.amazon/catalog/v1/searchItems"
 
     payload: dict[str, Any] = {
+        "marketplace": marketplace,
         "partnerTag": partner_tag,
-        "partnerType": "Associates",
         "searchIndex": search_index,
         "itemCount": max(1, min(item_count, 10)),
     }
@@ -201,8 +201,8 @@ def creators_api_get_variations(
 
     payload: dict[str, Any] = {
         "asin": asin,
+        "marketplace": marketplace,
         "partnerTag": partner_tag,
-        "partnerType": "Associates",
         "variationPage": variation_page,
         "variationCount": max(1, min(variation_count, 10)),
         "resources": resources or [
@@ -241,8 +241,8 @@ def creators_api_get_browse_nodes(
 
     payload: dict[str, Any] = {
         "browseNodeIds": browse_node_ids,
+        "marketplace": marketplace,
         "partnerTag": partner_tag,
-        "partnerType": "Associates",
         "resources": resources or [
             "browseNodes.ancestor",
             "browseNodes.children",
