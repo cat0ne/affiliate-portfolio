@@ -3,29 +3,19 @@
 Amazon Price Auto-Update Script
 
 Updates public/amazon-prices.json across all affiliation sites by fetching
-current prices from Amazon Creators API (preferred) or PA-API (fallback).
+current prices from the Amazon Creators API.
 
-NOTE (2026-04-27): Creators API credentials are ACTIVE in the Associates
-  dashboard but the API returns AssociateNotEligible. This is a propagation
-  delay — retry after 24-48h. See scripts/AMAZON_API_STATUS.md for details.
+NOTE (2026-05-15): Amazon deprecated PA-API and migrated affiliates to the
+  Creators API. The Creators API is now the only supported auth path. See
+  scripts/AMAZON_API_STATUS.md for details.
 
 Usage:
     python3 update-amazon-prices.py [--dry-run]
 
-Auth Method 1 — Amazon Creators API (RECOMMENDED):
+Auth — Amazon Creators API:
     Set environment variables:
         CREATORS_API_CLIENT_ID      - Your Creators API credential ID
         CREATORS_API_CLIENT_SECRET  - Your Creators API credential secret
-
-Auth Method 2 — PA-API OAuth 2.0:
-    Set environment variables:
-        PA_API_CLIENT_ID      - Login with Amazon OAuth client ID
-        PA_API_CLIENT_SECRET  - Login with Amazon OAuth client secret
-
-Auth Method 3 — PA-API AWS SigV4 (legacy):
-    Set environment variables:
-        PA_API_ACCESS_KEY     - Your AWS Access Key for PA-API
-        PA_API_SECRET_KEY     - Your AWS Secret Key for PA-API
 
 Partner tags are extracted automatically from affiliate URLs.
 
@@ -36,8 +26,6 @@ with code 0 (no failure) so it can be used in CI safely.
 from __future__ import annotations
 
 import argparse
-import hashlib
-import hmac
 import json
 import os
 import re
@@ -58,18 +46,15 @@ PROJECT_ROOT = SCRIPT_DIR.parent
 
 SITES = ["matelas", "aspirateur", "cafe", "pixinstant", "bureau"]
 
-# Marketplace mapping for Creators API & PA-API
+# Marketplace mapping for Creators API
 MARKETPLACES: dict[str, dict[str, str]] = {
-    "fr": {"host": "webservices.amazon.fr", "region": "eu-west-1", "marketplace": "www.amazon.fr", "creators_api": "https://creatorsapi.amazon"},
-    "de": {"host": "webservices.amazon.de", "region": "eu-west-1", "marketplace": "www.amazon.de", "creators_api": "https://creatorsapi.amazon"},
-    "es": {"host": "webservices.amazon.es", "region": "eu-west-1", "marketplace": "www.amazon.es", "creators_api": "https://creatorsapi.amazon"},
-    "it": {"host": "webservices.amazon.it", "region": "eu-west-1", "marketplace": "www.amazon.it", "creators_api": "https://creatorsapi.amazon"},
-    "co.uk": {"host": "webservices.amazon.co.uk", "region": "eu-west-1", "marketplace": "www.amazon.co.uk", "creators_api": "https://creatorsapi.amazon"},
-    "com": {"host": "webservices.amazon.com", "region": "us-east-1", "marketplace": "www.amazon.com", "creators_api": "https://creatorsapi.amazon"},
+    "fr": {"marketplace": "www.amazon.fr", "creators_api": "https://creatorsapi.amazon"},
+    "de": {"marketplace": "www.amazon.de", "creators_api": "https://creatorsapi.amazon"},
+    "es": {"marketplace": "www.amazon.es", "creators_api": "https://creatorsapi.amazon"},
+    "it": {"marketplace": "www.amazon.it", "creators_api": "https://creatorsapi.amazon"},
+    "co.uk": {"marketplace": "www.amazon.co.uk", "creators_api": "https://creatorsapi.amazon"},
+    "com": {"marketplace": "www.amazon.com", "creators_api": "https://creatorsapi.amazon"},
 }
-
-PA_API_SERVICE = "ProductAdvertisingAPI"
-PA_API_TARGET = "com.amazon.paapi5.v1.ProductAdvertisingAPIv1.GetItems"
 
 
 # ---------------------------------------------------------------------------
@@ -272,174 +257,13 @@ def _creators_api_call(endpoint: str, headers: dict[str, str], payload: dict[str
                     "      requirements for the Creators API.\n\n"
                     "      Next steps:\n"
                     "      1. Log into https://affiliate-program.amazon.com\n"
-                    "      2. Go to Tools → Product Advertising API\n"
-                    "      3. Register your AWS access key for PA-API access, OR\n"
-                    "      4. Apply for Creators API eligibility if available\n"
+                    "      2. Apply for Creators API eligibility if available\n"
                 )
                 response.raise_for_status()
         except json.JSONDecodeError:
             pass
     response.raise_for_status()
     return response
-
-
-# ---------------------------------------------------------------------------
-# PA-API OAuth 2.0 helpers
-# ---------------------------------------------------------------------------
-
-def get_paapi_oauth_token(client_id: str, client_secret: str) -> str:
-    """Exchange OAuth client credentials for a PA-API access token."""
-    payload = {
-        "grant_type": "client_credentials",
-        "scope": "advertising::campaign_management",
-        "client_id": client_id,
-        "client_secret": client_secret,
-    }
-    response = requests.post(
-        "https://api.amazon.com/auth/o2/token",
-        data=payload,
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
-        timeout=30,
-    )
-    response.raise_for_status()
-    data = response.json()
-    token = data.get("access_token")
-    if not token:
-        raise RuntimeError(f"No access_token in OAuth response: {data}")
-    return token
-
-
-def paapi_get_items_oauth(
-    asins: list[str],
-    partner_tag: str,
-    marketplace_cfg: dict[str, str],
-    access_token: str,
-) -> dict[str, Any]:
-    """Call PA-API 5.0 GetItems using OAuth 2.0 Bearer token."""
-    host = marketplace_cfg["host"]
-    marketplace = marketplace_cfg["marketplace"]
-    endpoint = f"https://{host}/paapi5/getitems"
-
-    payload = {
-        "ItemIds": asins,
-        "Resources": [
-            "Offers.Listings.Price",
-            "ItemInfo.Title",
-        ],
-        "PartnerTag": partner_tag,
-        "PartnerType": "Associates",
-        "Marketplace": marketplace,
-    }
-    payload_bytes = json.dumps(payload).encode("utf-8")
-
-    headers = {
-        "Content-Type": "application/json; charset=UTF-8",
-        "Host": host,
-        "Authorization": f"Bearer {access_token}",
-        "X-Amz-Target": PA_API_TARGET,
-    }
-
-    response = requests.post(endpoint, headers=headers, data=payload_bytes, timeout=30)
-    response.raise_for_status()
-    return response.json()
-
-
-# ---------------------------------------------------------------------------
-# AWS Signature Version 4 helpers
-# ---------------------------------------------------------------------------
-
-def _sign(key: bytes, msg: str) -> bytes:
-    return hmac.new(key, msg.encode("utf-8"), hashlib.sha256).digest()
-
-
-def _get_signature_key(secret_key: str, date_stamp: str, region: str, service: str) -> bytes:
-    k_date = _sign(("AWS4" + secret_key).encode("utf-8"), date_stamp)
-    k_region = _sign(k_date, region)
-    k_service = _sign(k_region, service)
-    k_signing = _sign(k_service, "aws4_request")
-    return k_signing
-
-
-def paapi_get_items_aws_sigv4(
-    asins: list[str],
-    partner_tag: str,
-    marketplace_cfg: dict[str, str],
-    access_key: str,
-    secret_key: str,
-) -> dict[str, Any]:
-    """Call PA-API 5.0 GetItems using AWS Signature Version 4."""
-    host = marketplace_cfg["host"]
-    region = marketplace_cfg["region"]
-    marketplace = marketplace_cfg["marketplace"]
-    endpoint = f"https://{host}/paapi5/getitems"
-
-    payload = {
-        "ItemIds": asins,
-        "Resources": [
-            "Offers.Listings.Price",
-            "ItemInfo.Title",
-        ],
-        "PartnerTag": partner_tag,
-        "PartnerType": "Associates",
-        "Marketplace": marketplace,
-    }
-    payload_bytes = json.dumps(payload).encode("utf-8")
-
-    t = datetime.now(timezone.utc)
-    amz_date = t.strftime("%Y%m%dT%H%M%SZ")
-    date_stamp = t.strftime("%Y%m%d")
-
-    method = "POST"
-    canonical_uri = "/paapi5/getitems"
-    canonical_querystring = ""
-    canonical_headers = (
-        f"content-type:application/json; charset=UTF-8\n"
-        f"host:{host}\n"
-        f"x-amz-date:{amz_date}\n"
-    )
-    signed_headers = "content-type;host;x-amz-date"
-    payload_hash = hashlib.sha256(payload_bytes).hexdigest()
-    canonical_request = "\n".join(
-        [
-            method,
-            canonical_uri,
-            canonical_querystring,
-            canonical_headers,
-            signed_headers,
-            payload_hash,
-        ]
-    )
-
-    algorithm = "AWS4-HMAC-SHA256"
-    credential_scope = f"{date_stamp}/{region}/{PA_API_SERVICE}/aws4_request"
-    string_to_sign = "\n".join(
-        [
-            algorithm,
-            amz_date,
-            credential_scope,
-            hashlib.sha256(canonical_request.encode("utf-8")).hexdigest(),
-        ]
-    )
-
-    signing_key = _get_signature_key(secret_key, date_stamp, region, PA_API_SERVICE)
-    signature = hmac.new(signing_key, string_to_sign.encode("utf-8"), hashlib.sha256).hexdigest()
-
-    auth_header = (
-        f"{algorithm} Credential={access_key}/{credential_scope}, "
-        f"SignedHeaders={signed_headers}, Signature={signature}"
-    )
-
-    headers = {
-        "Content-Type": "application/json; charset=UTF-8",
-        "Host": host,
-        "X-Amz-Date": amz_date,
-        "Authorization": auth_header,
-        "X-Amz-Target": PA_API_TARGET,
-    }
-
-    response = requests.post(endpoint, headers=headers, data=payload_bytes, timeout=30)
-    response.raise_for_status()
-    return response.json()
 
 
 # ---------------------------------------------------------------------------
@@ -527,23 +351,18 @@ def run_stale_price_detector(site_dir: Path) -> None:
 # ---------------------------------------------------------------------------
 
 def test_auth() -> int:
-    """Test all configured auth methods and report results."""
+    """Test Creators API credentials and report results."""
     print("=" * 60)
     print("Amazon API Auth Test")
     print("=" * 60)
 
     creators_client_id = os.environ.get("CREATORS_API_CLIENT_ID", "").strip()
     creators_client_secret = os.environ.get("CREATORS_API_CLIENT_SECRET", "").strip()
-    paapi_oauth_client_id = os.environ.get("PA_API_CLIENT_ID", "").strip()
-    paapi_oauth_client_secret = os.environ.get("PA_API_CLIENT_SECRET", "").strip()
-    aws_access_key = os.environ.get("PA_API_ACCESS_KEY", "").strip()
-    aws_secret_key = os.environ.get("PA_API_SECRET_KEY", "").strip()
 
     results = []
 
-    # Test 1: Creators API
     if creators_client_id and creators_client_secret:
-        print("\n1️⃣  Creators API (CREATORS_API_CLIENT_ID + CREATORS_API_CLIENT_SECRET)")
+        print("\n🔐 Creators API (CREATORS_API_CLIENT_ID + CREATORS_API_CLIENT_SECRET)")
         try:
             token = get_creators_api_token(creators_client_id, creators_client_secret)
             print("   ✅ Token acquired")
@@ -571,56 +390,8 @@ def test_auth() -> int:
             print(f"   ❌ Token failed: {exc}")
             results.append(("Creators API", "TOKEN_FAILED"))
     else:
-        print("\n1️⃣  Creators API — not configured")
+        print("\n🔐 Creators API — not configured")
         results.append(("Creators API", "NOT_CONFIGURED"))
-
-    # Test 2: PA-API OAuth
-    if paapi_oauth_client_id and paapi_oauth_client_secret:
-        print("\n2️⃣  PA-API OAuth 2.0 (PA_API_CLIENT_ID + PA_API_CLIENT_SECRET)")
-        try:
-            token = get_paapi_oauth_token(paapi_oauth_client_id, paapi_oauth_client_secret)
-            print("   ✅ Token acquired")
-            results.append(("PA-API OAuth", "TOKEN_OK"))
-        except Exception as exc:
-            print(f"   ❌ Token failed: {exc}")
-            results.append(("PA-API OAuth", "TOKEN_FAILED"))
-    else:
-        print("\n2️⃣  PA-API OAuth 2.0 — not configured")
-        results.append(("PA-API OAuth", "NOT_CONFIGURED"))
-
-    # Test 3: PA-API AWS SigV4
-    if aws_access_key and aws_secret_key:
-        print("\n3️⃣  PA-API AWS SigV4 (PA_API_ACCESS_KEY + PA_API_SECRET_KEY)")
-        print(f"   Access key: {aws_access_key[:8]}...")
-        try:
-            paapi_get_items_aws_sigv4(
-                ["B0DT13JGY2"], "zoomzen05-21", MARKETPLACES["fr"], aws_access_key, aws_secret_key
-            )
-            print("   ✅ API call succeeded — full access confirmed")
-            results.append(("PA-API AWS", "OK"))
-        except requests.exceptions.HTTPError as exc:
-            if exc.response is not None:
-                status = exc.response.status_code
-                if status == 404:
-                    print("   ❌ Access key not registered in Amazon Associates (404)")
-                    print("      → Go to https://affiliate-program.amazon.com → Tools → Product Advertising API")
-                    print("      → Register this access key to enable PA-API access")
-                    results.append(("PA-API AWS", "NOT_REGISTERED"))
-                elif status == 429:
-                    print("   ⚠️  Rate limited (429) — credentials are valid but throttled")
-                    results.append(("PA-API AWS", "RATE_LIMITED"))
-                else:
-                    print(f"   ❌ API call failed: {status} {exc.response.text[:200]}")
-                    results.append(("PA-API AWS", f"HTTP_{status}"))
-            else:
-                print(f"   ❌ API call failed: {exc}")
-                results.append(("PA-API AWS", "ERROR"))
-        except Exception as exc:
-            print(f"   ❌ API call failed: {exc}")
-            results.append(("PA-API AWS", "ERROR"))
-    else:
-        print("\n3️⃣  PA-API AWS SigV4 — not configured")
-        results.append(("PA-API AWS", "NOT_CONFIGURED"))
 
     print("\n" + "=" * 60)
     print("Test Results Summary")
@@ -693,49 +464,25 @@ def main() -> int:
 
     print(f"\n🆔 Found {len(all_asins)} unique ASIN(s) across {len(price_files)} site(s)")
 
-    # 3. Detect auth method and validate credentials
+    # 3. Validate Creators API credentials
     creators_client_id = os.environ.get("CREATORS_API_CLIENT_ID", "").strip()
     creators_client_secret = os.environ.get("CREATORS_API_CLIENT_SECRET", "").strip()
-    paapi_oauth_client_id = os.environ.get("PA_API_CLIENT_ID", "").strip()
-    paapi_oauth_client_secret = os.environ.get("PA_API_CLIENT_SECRET", "").strip()
-    aws_access_key = os.environ.get("PA_API_ACCESS_KEY", "").strip()
-    aws_secret_key = os.environ.get("PA_API_SECRET_KEY", "").strip()
 
-    auth_mode: str | None = None
-    auth_submode: str | None = None
-    oauth_token: str | None = None
-
-    if creators_client_id and creators_client_secret:
-        auth_mode = "creators"
-        print("\n🔐 Using Amazon Creators API (CREATORS_API_CLIENT_ID + CREATORS_API_CLIENT_SECRET)")
-        try:
-            oauth_token = get_creators_api_token(creators_client_id, creators_client_secret)
-            print("   ✅ Creators API token acquired successfully")
-        except Exception as exc:
-            print(f"   ❌ Creators API token acquisition failed: {exc}")
-            return 1
-    elif paapi_oauth_client_id and paapi_oauth_client_secret:
-        auth_mode = "paapi"
-        auth_submode = "oauth"
-        print("\n🔐 Using PA-API OAuth 2.0 (PA_API_CLIENT_ID + PA_API_CLIENT_SECRET)")
-        try:
-            oauth_token = get_paapi_oauth_token(paapi_oauth_client_id, paapi_oauth_client_secret)
-            print("   ✅ PA-API OAuth token acquired successfully")
-        except Exception as exc:
-            print(f"   ❌ PA-API OAuth token acquisition failed: {exc}")
-            return 1
-    elif aws_access_key and aws_secret_key:
-        auth_mode = "paapi"
-        auth_submode = "aws"
-        print("\n🔐 Using PA-API AWS SigV4 (PA_API_ACCESS_KEY + PA_API_SECRET_KEY)")
-    else:
-        print("\n⏸️  API credentials not configured.")
-        print("   Set ONE of the following credential pairs:")
-        print("       Creators API (recommended): CREATORS_API_CLIENT_ID + CREATORS_API_CLIENT_SECRET")
-        print("       PA-API OAuth:               PA_API_CLIENT_ID + PA_API_CLIENT_SECRET")
-        print("       PA-API AWS (legacy):        PA_API_ACCESS_KEY + PA_API_SECRET_KEY")
+    if not (creators_client_id and creators_client_secret):
+        print("\n⏸️  Creators API credentials not configured.")
+        print("   Set the following environment variables:")
+        print("       CREATORS_API_CLIENT_ID")
+        print("       CREATORS_API_CLIENT_SECRET")
         print("\n   The script will now exit gracefully (no failure).")
         return 0
+
+    print("\n🔐 Using Amazon Creators API (CREATORS_API_CLIENT_ID + CREATORS_API_CLIENT_SECRET)")
+    try:
+        oauth_token = get_creators_api_token(creators_client_id, creators_client_secret)
+        print("   ✅ Creators API token acquired successfully")
+    except Exception as exc:
+        print(f"   ❌ Creators API token acquisition failed: {exc}")
+        return 1
 
     # 4. Fetch prices
     print("\n🌐 Fetching prices…")
@@ -752,73 +499,40 @@ def main() -> int:
             for i in range(0, len(asins), batch_size):
                 batch = asins[i : i + batch_size]
                 try:
-                    if auth_mode == "creators" and oauth_token:
-                        response = creators_api_get_items(
-                            batch, partner_tag, cfg["marketplace"], oauth_token
+                    response = creators_api_get_items(
+                        batch, partner_tag, cfg["marketplace"], oauth_token
+                    )
+
+                    # Log API-level errors (lowercase keys per Creators API spec)
+                    for err in response.get("errors", []):
+                        err_msg = err.get("message", "unknown error")
+                        err_code = err.get("code", "Unknown")
+                        print(f"   ⚠️  Creators API error: {err_code} – {err_msg}")
+
+                    # Parse items (SDK uses 'itemsResult'; docs show 'itemResults' — try both)
+                    items_result = response.get("itemsResult") or response.get("itemResults")
+                    for item in (items_result or {}).get("items", []):
+                        item_asin = item.get("asin")
+                        if not item_asin:
+                            continue
+                        offers = item.get("offersV2", {}).get("listings", [])
+                        price = None
+                        currency = "EUR"
+                        if offers:
+                            price_data = offers[0].get("price", {})
+                            price = price_data.get("amount")
+                            currency = price_data.get("currency", "EUR")
+                        title = (
+                            item.get("itemInfo", {})
+                            .get("title", {})
+                            .get("displayValue")
                         )
-                    elif auth_mode == "paapi" and auth_submode == "oauth" and oauth_token:
-                        response = paapi_get_items_oauth(batch, partner_tag, cfg, oauth_token)
-                    else:
-                        response = paapi_get_items_aws_sigv4(
-                            batch, partner_tag, cfg, aws_access_key, aws_secret_key
-                        )
-
-                    # Parse Creators API response
-                    if auth_mode == "creators":
-                        # Log API-level errors (lowercase keys per Creators API spec)
-                        for err in response.get("errors", []):
-                            err_msg = err.get("message", "unknown error")
-                            err_code = err.get("code", "Unknown")
-                            print(f"   ⚠️  Creators API error: {err_code} – {err_msg}")
-
-                        # Parse items (SDK uses 'itemsResult'; docs show 'itemResults' — try both)
-                        items_result = response.get("itemsResult") or response.get("itemResults")
-                        for item in (items_result or {}).get("items", []):
-                            item_asin = item.get("asin")
-                            if not item_asin:
-                                continue
-                            offers = item.get("offersV2", {}).get("listings", [])
-                            price = None
-                            currency = "EUR"
-                            if offers:
-                                price_data = offers[0].get("price", {})
-                                price = price_data.get("amount")
-                                currency = price_data.get("currency", "EUR")
-                            title = (
-                                item.get("itemInfo", {})
-                                .get("title", {})
-                                .get("displayValue")
-                            )
-                            if price is not None:
-                                fetched_prices[item_asin] = {
-                                    "price": int(float(price)),
-                                    "currency": currency,
-                                    "title": title,
-                                }
-                    else:
-                        # Parse PA-API response
-                        for item_result in response.get("ItemsResult", {}).get("Items", []):
-                            item_asin = item_result.get("ASIN")
-                            if not item_asin:
-                                continue
-
-                            listings = item_result.get("Offers", {}).get("Listings", [])
-                            price_info = listings[0].get("Price", {}) if listings else {}
-                            amount = price_info.get("Amount")
-                            currency = price_info.get("CurrencyCode", "EUR")
-
-                            title = (
-                                item_result.get("ItemInfo", {})
-                                .get("Title", {})
-                                .get("DisplayValue")
-                            )
-
-                            if amount is not None:
-                                fetched_prices[item_asin] = {
-                                    "price": int(float(amount)),
-                                    "currency": currency,
-                                    "title": title,
-                                }
+                        if price is not None:
+                            fetched_prices[item_asin] = {
+                                "price": int(float(price)),
+                                "currency": currency,
+                                "title": title,
+                            }
                 except requests.exceptions.HTTPError as exc:
                     print(f"   ⚠️  HTTP error for {marketplace} batch {batch}: {exc}")
                 except Exception as exc:
